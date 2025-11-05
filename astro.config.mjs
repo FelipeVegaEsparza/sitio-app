@@ -12,7 +12,7 @@ export default defineConfig({
     static: 'dist/client'
   }),
   site: 'https://my-radio-site.com',
-  base: '/',
+  base: '',
   vite: {
     resolve: {
       alias: {
