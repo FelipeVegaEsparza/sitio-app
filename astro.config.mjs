@@ -5,7 +5,13 @@ import node from '@astrojs/node';
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
-  adapter: node({ mode: 'standalone', port: parseInt(process.env.PORT || '4321'), host: '0.0.0.0' }),
+  adapter: node({
+    mode: 'standalone'
+  }),
+  server: {
+    port: parseInt(process.env.PORT || '4321'),
+    host: '0.0.0.0'
+  },
   site: 'https://my-radio-site.com',
   base: '/',
   vite: {
