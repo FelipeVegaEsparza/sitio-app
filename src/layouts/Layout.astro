@@ -1,0 +1,23 @@
+---
+interface Props {
+  title: string;
+  siteLogoHeader?: string;
+  siteLogoFooter?: string;
+  footerDescription?: string;
+  socialNetworks?: Record<string, string>;
+}
+
+const { title, siteLogoHeader, siteLogoFooter, footerDescription, socialNetworks } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

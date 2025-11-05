@@ -1,0 +1,87 @@
+---
+import Layout from '~/templates/default/layouts/Layout.astro';
+import { getIpstreamData, getFullImageUrl } from '~/utils/api';
+import LatestPodcasts from '~/templates/default/components/LatestPodcasts.astro';
+import AboutSection from '~/templates/default/components/AboutSection.astro';
+import LatestNews from '~/templates/default/components/LatestNews.astro';
+import OurPrograms from '~/templates/default/components/OurPrograms.astro';
+import PromotionsSection from '~/templates/default/components/PromotionsSection.astro';
+import LatestVideocasts from '~/templates/default/components/LatestVideocasts.astro';
+import OurPartners from '~/templates/default/components/OurPartners.astro';
+import NowPlayingBanner from '~/templates/default/components/NowPlayingBanner.astro';
+
+// Obtener datos básicos del sitio
+const basicData = await getIpstreamData('/basic-data');
+const siteLogoHeader = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const siteLogoFooter = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const footerDescription = basicData?.projectDescription || 'Praesent ornare volutpat sollicitudin. Nulla vel semper augue, aliquet posuere odio. Morbi laoreet scelerisque risus vel tempor. Duis sagittis id elit et molestie. Etiam consectetur ipsum purus, a ornare mi finibus quis. egestas a nulla. Fusce tincidunt blandit ex, vel placerat odio placerat at.';
+const aboutTitle = basicData?.projectName || 'IpStream';
+const aboutDescription = basicData?.projectDescription || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus facilisis, neque id dapibus commodo, est libero ultricies felis, venenatis pulvinar eros magna dapibus turpis. Curabitur vel congue quam. Donec eleifend dui nec dui malesuada, id consectetur arcu aliquet. Nam non sollicitudin lacus. Nullam euismod justo dictum ex euismod pellentesque. Suspendisse potenti. Vestibulum ultricies, elit at dapibus placerat.';
+const aboutImage = basicData?.coverUrl ? getFullImageUrl(basicData.coverUrl) : '/image/dummy-img-600x700.jpg';
+
+// Obtener últimas noticias (limit=2 para la página de inicio)
+const latestNewsResponse = await getIpstreamData('/news?limit=2');
+const latestNews = latestNewsResponse?.data || [];
+
+// Obtener últimos podcasts (limit=3 para la página de inicio)
+const latestPodcastsResponse = await getIpstreamData('/podcasts?limit=3');
+const latestPodcasts = latestPodcastsResponse?.data || [];
+
+// Obtener programas
+const programs = await getIpstreamData('/programs');
+
+// Obtener últimos videocasts (limit=3 para la página de inicio)
+const latestVideocastsResponse = await getIpstreamData('/videocasts?limit=3');
+const latestVideocasts = latestVideocastsResponse?.data || [];
+
+// Obtener auspiciadores
+const sponsors = await getIpstreamData('/sponsors');
+
+// Obtener promociones
+const promotions = await getIpstreamData('/promotions');
+
+// Obtener redes sociales
+const socialNetworks = await getIpstreamData('/social-networks');
+
+console.log('basicData:', basicData);
+console.log('radioStreamingUrl prop value:', basicData?.radioStreamingUrl);
+
+// Pasar datos al Layout
+const layoutProps = {
+  title: "Goodsound - Homepage",
+  siteLogoHeader,
+  siteLogoFooter,
+  footerDescription,
+  socialNetworks,
+  basicData, // Pasar basicData completo para otros usos en el layout si es necesario
+};
+
+---
+
+<Layout {...layoutProps}>
+  <main>
+    <!-- BANNER FULL WIDTH - Ahora Suena -->
+    <NowPlayingBanner radioStreamingUrl={basicData?.radioStreamingUrl || ''} />
+
+    <!-- Most Favorite Podcast -->
+    <LatestPodcasts latestPodcasts={latestPodcasts} />
+
+    <!-- ABOUT -->
+    <AboutSection aboutTitle={aboutTitle} aboutDescription={aboutDescription} aboutImage={aboutImage} />
+
+    <!-- Our Blog -->
+    <LatestNews latestNews={latestNews} />
+
+    <!-- OUR TEAM -->
+    <OurPrograms programs={programs} />
+
+    <!-- TESTIMONIAL -->
+    <PromotionsSection promotions={promotions} />
+
+    <!-- Our Podcast -->
+    <LatestVideocasts latestVideocasts={latestVideocasts} />
+
+    <!-- Our Partners -->
+    <OurPartners sponsors={sponsors} />
+  </main>
+</Layout>

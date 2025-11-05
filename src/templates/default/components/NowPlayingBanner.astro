@@ -1,0 +1,491 @@
+---
+import { getCurrentSongData, CONFIG } from '../../../utils/api';
+
+interface Props {
+    radioStreamingUrl: string;
+}
+
+const { radioStreamingUrl } = Astro.props;
+
+// Pasar el SONIC_API_URL desde el servidor al cliente
+const sonicApiUrl = CONFIG.SONIC_API_URL;
+---
+
+<section id="now-playing-banner" class="full-width-banner" style="height: 90vh;">
+    <!-- Capa 1: Overlay de imagen de fondo (z-index: 1) -->
+    <div class="image-overlay"></div>
+
+    <!-- Capa 2: Visualizador de audio mejorado (z-index: 2) -->
+    <canvas id="audio-visualizer" class="audio-visualizer-canvas"></canvas>
+
+    <!-- Capa 3: Contenido (z-index: 3) -->
+    <div class="container-fluid h-100 position-relative" style="z-index: 3; max-width: 1440px; margin: 0 auto; padding: 2rem;">
+        <div class="row w-100 h-100 align-items-center g-4 hero-content-wrapper">
+            <!-- Columna Cover (primera en móvil) -->
+            <div class="col-12 col-lg-6 hero-cover-column order-lg-2">
+                <div class="d-flex flex-column align-items-center justify-content-center hero-cover-wrapper">
+                    <!-- Album Cover -->
+                    <div id="now-playing-cover" class="album-cover-container" style="display: none;">
+                        <img id="now-playing-cover-img" src="" alt="Album Cover" class="album-cover-img">
+                        <div class="cover-overlay">
+                            <button class="cover-action-btn" title="Ver en grande">
+                                <i class="fa-solid fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Info y Controles (segunda en móvil) -->
+            <div class="col-12 col-lg-6 hero-info-column order-lg-1">
+                <div class="d-flex flex-column gap-4 hero-info-wrapper">
+
+                    <!-- Título de la Canción -->
+                    <div class="now-playing-info">
+                        <div class="scrolling-text-container">
+                            <div class="scrolling-text-wrapper">
+                                <div class="scrolling-text" id="scrolling-text-display">
+                                    <span id="now-playing-artist" class="artist-text">Cargando...</span>
+                                    <span class="separator"> - </span>
+                                    <span id="now-playing-title" class="title-text">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats: Oyentes y Likes -->
+                        <div class="d-flex justify-content-center gap-4 mt-2">
+                            <span id="now-playing-listeners" class="stats-item">
+                                <i class="fa-solid fa-headphones"></i> <span class="stats-value">0</span> Oyentes
+                            </span>
+                            <button id="like-song-btn" class="stats-item like-btn">
+                                <i class="fa-regular fa-heart"></i> <span id="likes-count" class="stats-value">0</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Controles Principales -->
+                    <div class="player-controls-main">
+                        <audio id="audio-player" crossorigin="anonymous">
+                            Tu navegador no soporta el elemento de audio.
+                        </audio>
+
+                        <div class="d-flex flex-row gap-3 align-items-center justify-content-center">
+                            <button id="play-live-button" type="button" class="btn request-loader">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                            <a href="#" class="btn button font-1 ls-2 d-flex align-items-center">
+                                <i class="fa-brands fa-app-store-ios me-2"></i> INSTALA APP
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Compartir -->
+                    <div class="share-buttons-container glass-effect-box">
+                        <span class="share-label">Compartir:</span>
+                        <div class="share-buttons">
+                            <button class="share-btn share-fb" title="Compartir en Facebook" data-platform="facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </button>
+                            <button class="share-btn share-tw" title="Compartir en Twitter" data-platform="twitter">
+                                <i class="fa-brands fa-twitter"></i>
+                            </button>
+                            <button class="share-btn share-wa" title="Compartir en WhatsApp" data-platform="whatsapp">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </button>
+                            <button class="share-btn share-tg" title="Compartir en Telegram" data-platform="telegram">
+                                <i class="fa-brands fa-telegram"></i>
+                            </button>
+                            <button class="share-btn share-copy" title="Copiar enlace" data-platform="copy">
+                                <i class="fa-solid fa-link"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script define:vars={{ radioStreamingUrl, sonicApiUrl }}>
+    // ⚠️ NO MODIFICAR: Estas variables se pasan automáticamente desde src/utils/api.ts
+    window.globalRadioStreamingUrl = radioStreamingUrl;
+    window.globalSonicApiUrl = sonicApiUrl;
+    console.log('🎵 NowPlayingBanner: radioStreamingUrl recibido del servidor:', radioStreamingUrl);
+    console.log('🎵 NowPlayingBanner: sonicApiUrl recibido del servidor:', sonicApiUrl);
+</script>
+
+<script is:inline>
+    // ⚠️ NO MODIFICAR: Estas configuraciones vienen de src/utils/api.ts
+    const SONIC_API_URL = window.globalSonicApiUrl;
+    const radioStreamingUrl = window.globalRadioStreamingUrl;
+
+    // Variables globales
+    let audioContext = null;
+    let analyser = null;
+    let currentSongData = null;
+    let likesCount = 0;
+
+    console.log('🎵 Script inline cargado');
+
+    // ===== API Functions =====
+    async function getCurrentSongDataClient() {
+        try {
+            const response = await fetch(`${SONIC_API_URL}&rand=${Date.now()}`);
+            if (!response.ok) {
+                console.error(`Error HTTP: ${response.status}`);
+                return null;
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error al obtener datos:', error);
+            return null;
+        }
+    }
+
+    // ===== Update Functions =====
+    function updateNowPlayingBanner(data) {
+        const banner = document.getElementById('now-playing-banner');
+        const coverContainer = document.getElementById('now-playing-cover');
+        const coverImg = document.getElementById('now-playing-cover-img');
+
+        if (banner && data && data.art) {
+            const imageUrlWithBuster = `${data.art}?timestamp=${new Date().getTime()}`;
+            const preloadImage = new Image();
+            preloadImage.onload = () => {
+                banner.style.backgroundImage = `url(${imageUrlWithBuster})`;
+                banner.classList.add('blurred-background');
+
+                if (coverImg && coverContainer) {
+                    coverImg.src = imageUrlWithBuster;
+                    coverContainer.style.display = 'block';
+                }
+            };
+            preloadImage.src = imageUrlWithBuster;
+        }
+    }
+
+    function updateNowPlayingInfo(data) {
+        const titleEl = document.getElementById('now-playing-title');
+        const artistEl = document.getElementById('now-playing-artist');
+        const listenersEl = document.querySelector('#now-playing-listeners .stats-value');
+        const scrollingTextWrapper = document.querySelector('.scrolling-text-wrapper');
+        const scrollingTextDisplay = document.getElementById('scrolling-text-display');
+
+        if (data && data.title) {
+            const parts = data.title.split(' - ');
+            let artist = '';
+            let title = '';
+
+            if (parts.length === 2) {
+                artist = parts[0];
+                title = parts[1];
+            } else {
+                title = data.title;
+            }
+
+            // Update text content
+            if (artistEl) artistEl.textContent = artist;
+            if (titleEl) titleEl.textContent = title;
+
+            // Handle scroll animation
+            if (scrollingTextWrapper && scrollingTextDisplay) {
+                // Stop any existing animation
+                scrollingTextWrapper.classList.remove('scroll-active');
+
+                // Create full text for data attribute
+                const fullText = artist ? `${artist} - ${title}` : title;
+                scrollingTextDisplay.setAttribute('data-text', fullText);
+
+                // Force reflow
+                void scrollingTextDisplay.offsetWidth;
+
+                // Wait a bit for DOM to update
+                setTimeout(() => {
+                    const container = document.querySelector('.scrolling-text-container');
+                    const textWidth = scrollingTextDisplay.offsetWidth;
+                    const containerWidth = container.offsetWidth;
+
+                    console.log('📏 Text width:', textWidth, 'Container width:', containerWidth);
+
+                    if (textWidth > containerWidth - 60) {
+                        // Text needs to scroll
+                        console.log('✅ Activando scroll');
+                        scrollingTextWrapper.classList.add('scroll-active');
+                    } else {
+                        // Text fits, no scroll needed
+                        console.log('❌ Texto cabe, no scroll');
+                        scrollingTextWrapper.classList.remove('scroll-active');
+                    }
+                }, 150);
+            }
+        }
+
+        if (listenersEl && data && data.listeners) {
+            listenersEl.textContent = data.listeners;
+        }
+
+        currentSongData = data;
+    }
+
+    // ===== Audio Player Setup =====
+    function setupAudioPlayer(streamUrl) {
+        const audioPlayer = document.getElementById('audio-player');
+        const playLiveButton = document.getElementById('play-live-button');
+
+        if (!audioPlayer || !playLiveButton) return;
+
+        const playIcon = playLiveButton.querySelector('i');
+        if (!playIcon) return;
+
+        if (!streamUrl || streamUrl === '') {
+            console.error('URL del stream no proporcionada');
+            return;
+        }
+
+        audioPlayer.src = streamUrl;
+        audioPlayer.volume = 0.8;
+        audioPlayer.load();
+
+        playLiveButton.addEventListener('click', function() {
+            if (audioPlayer.paused) {
+                audioPlayer.play()
+                    .then(() => {
+                        playIcon.className = 'fa-solid fa-pause';
+                        setupVisualizer();
+                    })
+                    .catch(error => {
+                        console.error('Error al reproducir:', error);
+                        playIcon.className = 'fa-solid fa-play';
+                    });
+            } else {
+                audioPlayer.pause();
+                playIcon.className = 'fa-solid fa-play';
+            }
+        });
+
+        audioPlayer.addEventListener('playing', () => {
+            playIcon.className = 'fa-solid fa-pause';
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            playIcon.className = 'fa-solid fa-play';
+        });
+    }
+
+    // ===== Share Functions =====
+    function setupShareButtons() {
+        const shareButtons = document.querySelectorAll('.share-btn');
+
+        shareButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const platform = btn.dataset.platform;
+                const songInfo = currentSongData ? currentSongData.title : 'esta radio';
+                const url = window.location.href;
+                const text = `Estoy escuchando ${songInfo} en vivo!`;
+
+                let shareUrl = '';
+
+                switch(platform) {
+                    case 'facebook':
+                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+                        break;
+                    case 'twitter':
+                        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+                        break;
+                    case 'whatsapp':
+                        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+                        break;
+                    case 'telegram':
+                        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+                        break;
+                    case 'copy':
+                        navigator.clipboard.writeText(url).then(() => {
+                            btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                            setTimeout(() => {
+                                btn.innerHTML = '<i class="fa-solid fa-link"></i>';
+                            }, 2000);
+                        });
+                        return;
+                }
+
+                if (shareUrl) {
+                    window.open(shareUrl, '_blank', 'width=600,height=400');
+                }
+            });
+        });
+    }
+
+    // ===== Like Button =====
+    function setupLikeButton() {
+        const likeBtn = document.getElementById('like-song-btn');
+        const likesCountEl = document.getElementById('likes-count');
+        const likeIcon = likeBtn?.querySelector('i');
+
+        likeBtn?.addEventListener('click', () => {
+            likesCount++;
+            likesCountEl.textContent = likesCount;
+
+            if (likeIcon) {
+                likeIcon.className = 'fa-solid fa-heart';
+                setTimeout(() => {
+                    likeIcon.className = 'fa-regular fa-heart';
+                }, 1000);
+            }
+
+            // Animation
+            likeBtn.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                likeBtn.style.transform = 'scale(1)';
+            }, 200);
+        });
+    }
+
+    // ===== Visualizer =====
+    function setupVisualizer() {
+        if (audioContext) return; // Already setup
+
+        const audioPlayer = document.getElementById('audio-player');
+        const canvas = document.getElementById('audio-visualizer');
+        if (!canvas || !audioPlayer) return;
+
+        const ctx = canvas.getContext('2d');
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaElementSource(audioPlayer);
+
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        analyser.fftSize = 256;
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function draw() {
+            requestAnimationFrame(draw);
+
+            analyser.getByteFrequencyData(dataArray);
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                barHeight = (dataArray[i] / 255) * canvas.height * 0.5;
+
+                const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+                gradient.addColorStop(0, 'rgba(0, 74, 173, 0.8)');
+                gradient.addColorStop(1, 'rgba(0, 150, 255, 0.9)');
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+                x += barWidth + 1;
+            }
+        }
+
+        draw();
+    }
+
+    // ===== Update Loop =====
+    function startNowPlayingUpdates(callback, interval = 10000) {
+        getCurrentSongDataClient().then(data => {
+            if (data) callback(data);
+        });
+
+        setInterval(async () => {
+            const data = await getCurrentSongDataClient();
+            if (data) callback(data);
+        }, interval);
+    }
+
+    // ===== Initialize =====
+    document.addEventListener('DOMContentLoaded', () => {
+        startNowPlayingUpdates(data => {
+            updateNowPlayingBanner(data);
+            updateNowPlayingInfo(data);
+        });
+
+        setupAudioPlayer(radioStreamingUrl);
+        setupShareButtons();
+        setupLikeButton();
+    });
+</script>
+
+<style>
+    /* En pantallas pequeñas: cover primero, info después - todo en columna vertical */
+    @media (max-width: 991px) {
+        /* Forzar que el row se comporte como columna */
+        .hero-content-wrapper.row {
+            display: flex !important;
+            flex-direction: column !important;
+            flex-wrap: nowrap !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            height: auto !important;
+        }
+
+        /* Forzar que ambas columnas ocupen el 100% y se apilen verticalmente */
+        .hero-cover-column {
+            order: 1 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 0 0 auto !important;
+            margin-bottom: 2rem !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        .hero-info-column {
+            order: 2 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 0 0 auto !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        /* Contenedores internos */
+        .hero-cover-wrapper {
+            width: 100% !important;
+            height: auto !important;
+            min-height: auto !important;
+            justify-content: center !important;
+        }
+
+        .hero-info-wrapper {
+            width: 100% !important;
+            height: auto !important;
+            min-height: auto !important;
+            justify-content: flex-start !important;
+        }
+
+        /* Asegurar que el cover tenga buen tamaño en móvil cuando esté visible */
+        #now-playing-cover[style*="display: block"],
+        #now-playing-cover:not([style*="display: none"]) {
+            max-width: 300px;
+            width: 100%;
+            margin: 0 auto 2rem auto;
+            display: block !important;
+        }
+
+        .album-cover-img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Asegurar que el contenido de info esté centrado */
+        .hero-info-wrapper {
+            text-align: center;
+        }
+    }
+</style>

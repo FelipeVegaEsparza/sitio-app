@@ -1,0 +1,174 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface BasicData {
+    projectName: string;
+    projectDescription: string;
+    coverUrl: string;
+}
+
+interface SocialNetwork {
+    name: string;
+    url: string;
+}
+
+interface Props {
+    basicData?: { data: BasicData } | BasicData | null;
+    socialNetworks?: { [key: string]: string } | null;
+}
+
+const { basicData, socialNetworks } = Astro.props;
+
+const data = basicData ? ('data' in basicData ? basicData.data : basicData) : null;
+
+const socialLinks: { name: string, url: string }[] = [];
+if (socialNetworks && typeof socialNetworks === 'object') {
+    const ignoredKeys = ['createdAt', 'updatedAt'];
+    for (const [name, url] of Object.entries(socialNetworks)) {
+        if (!ignoredKeys.includes(name) && url) {
+            socialLinks.push({ name, url });
+        }
+    }
+}
+
+const getSocialIcon = (name: string) => {
+    if (!name) return 'fas fa-link';
+    switch (name.toLowerCase()) {
+        case 'facebook': return 'fab fa-facebook-f';
+        case 'twitter': return 'fab fa-twitter';
+        case 'instagram': return 'fab fa-instagram';
+        case 'youtube': return 'fab fa-youtube';
+        case 'tiktok': return 'fab fa-tiktok';
+        case 'whatsapp': return 'fab fa-whatsapp';
+        case 'x': return 'fab fa-x-twitter';
+        default: return 'fas fa-link';
+    }
+};
+---
+
+{data && (
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-text">
+                    <h2 class="project-name">{data.projectName}</h2>
+                    <p class="project-description">{data.projectDescription}</p>
+                    {socialLinks && socialLinks.length > 0 && (
+                        <div class="social-media-block">
+                            <h3 class="social-title">Síguenos en nuestras Redes Sociales</h3>
+                            <div class="social-links">
+                                {socialLinks.map(social => (
+                                    social && social.url && (
+                                        <a href={social.url} target="_blank" rel="noopener noreferrer" aria-label={social.name} class="social-icon-link">
+                                            <i class={getSocialIcon(social.name)}></i>
+                                        </a>
+                                    )
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div class="about-image">
+                    <img src={getFullImageUrl(data.coverUrl)} alt={`Cover image for ${data.projectName}`} />
+                </div>
+            </div>
+        </div>
+    </section>
+)}
+
+<style>
+    .about-section {
+        padding: 4rem 2rem;
+        background-color: #f8f9fa;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .about-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: center;
+    }
+    .about-text {
+        text-align: left;
+    }
+    .project-name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 1rem;
+    }
+    .project-description {
+        font-size: 1.1rem;
+        color: #495057;
+        line-height: 1.6;
+        margin-bottom: 1.5rem; /* Added margin below description */
+    }
+    .social-links {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    .social-media-block {
+        margin-top: 2rem;
+        border-top: 1px solid #eee;
+        padding-top: 1.5rem;
+    }
+    .social-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 1rem;
+    }
+    .social-icon-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #495057;
+        font-size: 1.2rem;
+        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    }
+    .social-icon-link:hover {
+        background-color: #0d6efd;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+    .about-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .about-image img {
+        max-width: 80%; /* Reduced size */
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 992px) {
+        .about-grid {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        .about-text {
+            order: 2;
+        }
+        .about-image {
+            order: 1;
+            margin-bottom: 2rem;
+        }
+        .project-name {
+            font-size: 2rem;
+        }
+        .social-links {
+            justify-content: center;
+        }
+    }
+</style>

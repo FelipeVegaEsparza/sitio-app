@@ -1,0 +1,120 @@
+---
+import Layout from '~/templates/default/layouts/Layout.astro';
+import { getIpstreamData, getFullImageUrl } from '~/utils/api';
+
+const currentPage = parseInt(Astro.url.searchParams.get('page') || '1');
+const podcastsResponse = await getIpstreamData(`/podcasts?limit=6&page=${currentPage}`);
+const allPodcasts = podcastsResponse?.data || [];
+const pagination = podcastsResponse?.pagination || {};
+
+const basicData = await getIpstreamData('/basic-data');
+const siteLogoHeader = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const siteLogoFooter = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const footerDescription = basicData?.projectDescription || '';
+
+const socialNetworks = await getIpstreamData('/social-networks');
+
+const layoutProps = {
+  title: "Goodsound - Podcasts",
+  siteLogoHeader,
+  siteLogoFooter,
+  footerDescription,
+  socialNetworks,
+};
+---
+
+<Layout {...layoutProps}>
+  <main>
+    <!-- BANNER -->
+    <section class="section position-relative" style="background-image: url(/image/podcast-banner.png);">
+        <div class="image-overlay"></div>
+        <div class="r-container  position-relative" style="z-index: 2;">
+            <div class="d-flex flex-column">
+                <h2 class="font-1 fw-bold">Nuestro <span class="accent-color">Podcasts</span></h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb font-2">
+                        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Podcasts</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <!-- Most Favorite Podcast -->
+    <section class="section">
+        <div class="r-container">
+            <div class="d-flex flex-column gap-3 text-center">
+                <h3 class="font-1 fw-bold">Todos <span class="accent-color">Nuestro</span> Capitulos</h3>
+                <p class="mx-auto text-gray" style="max-width: 768px;">Creemos en el poder de las historias, las conversaciones y las ideas que inspiran.
+Aquí encontrarás todos nuestros podcasts, con programas pensados para acompañarte donde estés: entrevistas, música, actualidad, reflexiones y mucho más.
+Escucha los episodios cuando quieras y conéctate con el contenido que más te gusta.
+¡Dale play y sé parte de nuestra sintonía digital!</p>
+                <div id="podcasts-container" class="row row-cols-1 row-cols-lg-3 w-100 text-start">
+                    {
+                        allPodcasts.length > 0 ? (
+                            allPodcasts.map(podcast => (
+                                <div class="col mb-3">
+                                    <div class="d-flex flex-column gap-3 h-100">
+                                        <div class="position-relative h-100">
+                                            <div class="image-overlay-2"></div>
+                                            <div class="position-absolute start-0 top-0 w-100 h-100" style="z-index: 2;">
+                                                <div class="d-flex justify-content-center align-items-center h-100">
+                                                    <a href={`/simple_podcast?id=${podcast.id}`} class="btn request-loader">
+                                                        <i class="fa-solid fa-play ms-1"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <img src={getFullImageUrl(podcast.imageUrl)} alt={podcast.title} class="img-fluid rounded-3 w-100 h-100 object-fit-cover" style="object-position: center;">
+                                        </div>
+                                        <div class="d-flex flex-row gap-5">
+                                            <div class="d-flex flex-row align-items-center gap-2">
+                                                <i class="fa-regular fa-clock accent-color"></i>
+                                                {podcast.duration}
+                                            </div>
+                                            <div class="d-flex flex-row align-items-center gap-2">
+                                                <i class="fa-solid fa-calendar-days accent-color"></i>
+                                                {new Date(podcast.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            </div>
+                                        </div>
+                                        <h5 class="font-1 fw-bold lh-1">{podcast.title}</h5>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No hay podcasts disponibles.</p>
+                        )
+                    }
+                </div>
+                <div id="pagination-container" class="d-flex justify-content-center mt-5">
+                    {
+                        pagination.pages > 1 && (
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <li class={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                                        <a class="page-link" href={`/podcasts?page=${pagination.page - 1}`} aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    {
+                                        Array.from({ length: pagination.pages }, (_, i) => i + 1).map(page => (
+                                            <li class={`page-item ${page === pagination.page ? 'active' : ''}`}>
+                                                <a class="page-link" href={`/podcasts?page=${page}`}>{page}</a>
+                                            </li>
+                                        ))
+                                    }
+                                    <li class={`page-item ${pagination.page === pagination.pages ? 'disabled' : ''}`}>
+                                        <a class="page-link" href={`/podcasts?page=${pagination.page + 1}`} aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        )
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+  </main>
+</Layout>

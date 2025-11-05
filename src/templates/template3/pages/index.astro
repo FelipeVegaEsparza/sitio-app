@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import LatestNews from '../components/LatestNews.astro';
+import LatestVideocasts from '../components/LatestVideocasts.astro';
+import LatestPodcasts from '../components/LatestPodcasts.astro';
+import ProgramSchedule from '../components/ProgramSchedule.astro';
+import AboutSection from '../components/AboutSection.astro';
+import SponsorsSection from '../components/SponsorsSection.astro';
+import PromotionsCarousel from '../components/PromotionsCarousel.astro';
+import { getIpstreamData } from '../../../utils/api';
+
+const [
+    basicData,
+    news,
+    podcasts,
+    programs,
+    videocasts,
+    sponsors,
+    promotions,
+    socialNetworks
+] = await Promise.all([
+    getIpstreamData('/basic-data'),
+    getIpstreamData('/news'),
+    getIpstreamData('/podcasts'),
+    getIpstreamData('/programs'),
+    getIpstreamData('/videocasts'),
+    getIpstreamData('/sponsors'),
+    getIpstreamData('/promotions'),
+    getIpstreamData('/social-networks')
+]);
+
+const firstPromotion = promotions && promotions.length > 0 ? promotions[0] : null;
+---
+<Layout title="Template 3 - En Construcción" socialNetworks={socialNetworks}>
+    <Header basicData={basicData} socialNetworks={socialNetworks} />
+    
+    <main style="padding-top: 80px;">
+        <PromotionsCarousel promotions={promotions} />
+        <LatestNews news={news} />
+        <LatestVideocasts videocasts={videocasts} />
+        <LatestPodcasts podcasts={podcasts} />
+        <ProgramSchedule programs={programs} />
+        <AboutSection basicData={basicData} socialNetworks={socialNetworks} />
+        <SponsorsSection sponsors={sponsors} />
+    </main>
+
+    <Footer basicData={basicData} socialNetworks={socialNetworks} />
+</Layout>

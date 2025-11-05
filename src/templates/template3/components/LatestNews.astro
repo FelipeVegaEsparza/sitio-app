@@ -1,0 +1,106 @@
+---
+import NewsCard from './NewsCard.astro';
+
+interface NewsItem {
+    title: string;
+    imageUrl: string;
+    slug?: string;
+}
+
+interface Props {
+    news: NewsItem[];
+}
+
+const { news } = Astro.props;
+
+// Defensive check: The news data might be nested in a 'data' property or it could be the array itself.
+const newsArray = Array.isArray(news) ? news : (news && Array.isArray(news.data)) ? news.data : [];
+
+const latestNews = newsArray.slice(0, 4);
+---
+
+<section id="news" class="latest-news-section">
+    <div class="container">
+        <div class="section-title-wrapper">
+            <div class="title-left">
+                <i class="section-icon fas fa-newspaper"></i>
+                <h2 class="section-title">Últimas Noticias</h2>
+            </div>
+            <p class="section-description">Mantente al día con nuestras últimas publicaciones.</p>
+        </div>
+        <div class="news-grid">
+            {latestNews.map(item => (
+                <NewsCard newsItem={item} />
+            ))}
+        </div>
+    </div>
+</section>
+
+<style>
+    .latest-news-section {
+        padding: 2rem 2rem; /* Reduced vertical padding */
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .section-title-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between; /* Pushes title and description apart */
+        margin-bottom: 2.5rem;
+        animation: fadeInDown 0.8s ease-out;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1.5rem;
+    }
+    .title-left {
+        display: flex;
+        align-items: center;
+    }
+    .section-icon {
+        font-size: 1.8rem; /* Slightly smaller icon */
+        color: #0d6efd;
+        margin-right: 1rem; /* Space between icon and title */
+    }
+    .section-title {
+        font-size: 2.2rem; /* Slightly smaller title */
+        font-weight: 700;
+        text-align: left;
+        margin: 0;
+    }
+    .section-description {
+        font-size: 1rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .news-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+
+    @media (max-width: 992px) {
+        .news-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .news-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

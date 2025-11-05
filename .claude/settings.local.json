@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell:*)",
+      "Bash(dir srctemplatesdefaultcomponents)",
+      "Bash(curl -s \"https://dashboard.ipstream.cl/api/public/cmf4du07u000313x255b7jy2t/basic-data\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

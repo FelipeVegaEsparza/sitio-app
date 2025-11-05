@@ -1,0 +1,33 @@
+---
+import Layout, { type Props } from '../templates/default/layouts/Layout.astro';
+
+const layoutProps: Props = {
+  title: 'Página no encontrada',
+  siteLogoHeader: '/image/logo.png',
+  siteLogoFooter: '/image/logo.png',
+  footerDescription: '',
+  socialNetworks: null
+};
+---
+
+<Layout {...layoutProps}>
+  <main class="section">
+    <div class="r-container text-center">
+      <h1 class="font-1 fw-bold">404</h1>
+      <p class="font-2">La página que buscas no existe</p>
+      <a href="/" class="btn btn-primary mt-4">Volver al inicio</a>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  h1 {
+    font-size: 6rem;
+    color: var(--accent-color);
+  }
+  .section {
+    min-height: 60vh;
+    display: grid;
+    place-items: center;
+  }
+</style>

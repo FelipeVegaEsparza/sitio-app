@@ -1,0 +1,59 @@
+---
+interface Props {
+    aboutTitle: string;
+    aboutDescription: string;
+    aboutImage: string;
+}
+
+const { aboutTitle, aboutDescription, aboutImage } = Astro.props;
+---
+
+<section class="section bg-secondary-color">
+    <div class="r-container">
+        <div class="row row-cols-1 row-cols-lg-2 w-100">
+            <div class="col mb-lg-0 mb-5">
+                <div class="d-flex flex-column gap-3 h-100 justify-content-center">
+                    <span class="fs-5">Sobre Nosotros</span>
+                    <h3 id="about-title" class="font-1 fw-bold lh-1">Somos Radio <span
+                            class="accent-color">{aboutTitle}</span></h3>
+                    <p id="about-description" class="text-gray">
+                        {aboutDescription}
+                    </p>
+                    <h5 class="font-1 fw-bold ">Puedes escucharnos en:</h5>
+                    <div class="d-flex flex-lg-row gap-3">
+                        <div class="col mb-3">
+                            <img id="about-youtube-img" src="/image/footer_ipstream.png" alt="youtube" class="img-fluid">
+                        </div>
+                        <div class="col mb-3">
+                            <img id="about-spotify-img" src="/image/footer_app.png" alt="spotify" class="img-fluid">
+                        </div>
+                        <div class="col mb-3">
+                            <img id="about-google-podcast-img" src="/image/footer_garden.png"
+                                alt="google podcast" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-3">
+                <div class="position-relative">
+                    <div class="position-relative me-5">
+                        <div class="image-overlay-2 rounded-4"></div>
+                        <div class="position-absolute start-0 top-0 w-100 h-100" style="z-index: 2;">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                            </div>
+                        </div>
+                        <img id="about-image" src={aboutImage} alt="image"
+                            class="img-fluid w-100 rounded-4" loading="lazy">
+                    </div>
+                </div>
+                <div class="modal fade bg-overlay" id="modal-about" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content bg-dark-color">
+                            <iframe id="about-video-iframe" class="ifr-video"
+                                data-src="https://www.youtube.com/embed/FK2RaJ1EfA8?autoplay=1" src=""></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>

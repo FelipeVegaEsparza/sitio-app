@@ -1,0 +1,73 @@
+--- 
+import { getFullImageUrl } from '../../../utils/api';
+
+interface NewsItem {
+    name: string; // Changed from title to name
+    imageUrl: string;
+    slug?: string; 
+}
+
+interface Props {
+  newsItem: NewsItem;
+}
+
+const { newsItem } = Astro.props;
+
+// Use newsItem.name for slug generation
+const slug = newsItem.slug || newsItem.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+const newsUrl = `/blog/${slug}`;
+---
+
+<a href={newsUrl} class="news-card">
+    <img src={getFullImageUrl(newsItem.imageUrl)} alt={newsItem.name} class="card-image" />
+    <div class="card-overlay"></div>
+    <h3 class="card-title">{newsItem.name}</h3>
+</a>
+
+<style>
+    .news-card {
+        display: block;
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 3 / 4;
+        text-decoration: none;
+        color: #fff;
+        transition: transform 0.3s ease;
+    }
+    .news-card:hover {
+        transform: translateY(-5px);
+    }
+    .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .news-card:hover .card-image {
+        transform: scale(1.05);
+    }
+    .card-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+        z-index: 1;
+        /* Glassmorphism on overlay */
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+    }
+    .card-title {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        padding: 1.5rem;
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        z-index: 2; /* Ensure title is above overlay */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Add text shadow for contrast */
+    }
+</style>

@@ -1,0 +1,55 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Props {
+    latestNews: any[];
+}
+
+const { latestNews } = Astro.props;
+---
+
+<section class="section">
+    <div class="r-container">
+        <div class="d-flex flex-lg-row flex-column-reverse gap-3">
+            <div class="col col-lg-7 mb-3">
+                <div id="latest-news-container" class="row row-cols-1 row-cols-lg-2">
+                    {
+                        latestNews.length > 0 ? (
+                            latestNews.map(newsItem => (
+                                <div class="col mb-3">
+                                    <div class="card border-0 bg-secondary-color p-3 shadow">
+                                        <div class="news-card-image-container">
+                                            <img src={getFullImageUrl(newsItem.imageUrl)} class="news-card-image" alt={newsItem.name}>
+                                        </div>
+                                        <div class="card-body text-white">
+                                            <h5 class="font-1 fw-bold ">{newsItem.name}</h5>
+                                            <p class="card-text">{newsItem.shortText.length > 120 ? `${newsItem.shortText.substring(0, 120)}…` : newsItem.shortText}</p>
+                                            <a href={`/blog/${newsItem.slug}`} class="btn link font-1 fw-bold">LEER MAS <i
+                                                    class="fa-solid fa-arrow-right ms-2"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No hay noticias disponibles.</p>
+                        )
+                    }
+                </div>
+            </div>
+            <div class="col col-lg-5 ps-lg-5 mb-3">
+                <div class="d-flex flex-column h-100 justify-content-center gap-3">
+                    <span class="fs-5">Nuestro Blog</span>
+                    <h3 class="font-1 fw-bold lh-1"><span class="accent-color">Nuestras Ultimas</span> Noticias
+                    </h3>
+                    <p class="mx-auto text-gray" style="max-width: 768px;">Te mantenemos informado y conectado con lo que sucede en nuestra comunidad y en el mundo.
+Descubre las últimas novedades, entrevistas, lanzamientos, eventos y contenidos especiales preparados por nuestro equipo.
+Queremos ser más que una radio: un espacio de encuentro, opinión y actualidad.
+Explora nuestras publicaciones y entérate de todo lo que está pasando
+                    </p>
+                    <div>
+                        <a href="/blog" class="btn button font-1 ls-2">VER TODAS LAS NOTICIAS</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>

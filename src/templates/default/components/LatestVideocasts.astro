@@ -1,0 +1,70 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Props {
+    latestVideocasts: any[];
+}
+
+const { latestVideocasts } = Astro.props;
+---
+
+<section class="section position-relative">
+    <div class="texture-overlay"></div>
+    <div class="r-container position-relative" style="z-index: 2;">
+        <div class="d-flex flex-column text-center gap-3">
+            <span class="fs-5">Nuestros Podcast Video</span>
+            <h3 class="font-1 fw-bold lh-1"><span class="accent-color">Ultimos</span> Episodios</h3>
+            <p>Creemos en el poder de las historias, las conversaciones y las ideas que inspiran. Aquí encontrarás todos nuestros podcasts, con programas pensados para acompañarte donde estés: entrevistas, música, actualidad, reflexiones y mucho más. Escucha los episodios cuando quieras y conéctate con el contenido que más te gusta. ¡Dale play y sé parte de nuestra sintonía digital!</p>
+            <div class="row row-cols-1 row-cols-lg-3">
+                {
+                    latestVideocasts.length > 0 ? (
+                        latestVideocasts.map(videocast => {
+                            const formattedDate = new Date(videocast.createdAt).toLocaleDateString('es-ES', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                            });
+
+                            return (
+                                <div class="col mb-4">
+                                    <div class="d-flex flex-column gap-3 h-100">
+                                        <div class="position-relative h-100">
+                                            <div class="overlay rounded-3"></div>
+                                            <div class="position-absolute start-0 top-0 w-100 h-100" style="z-index: 2;">
+                                                <div class="d-flex justify-content-center align-items-center h-100">
+                                                    <a href={`/simple_videocast?id=${videocast.id}`} class="btn request-loader">
+                                                        <i class="fa-solid fa-play ms-1"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <img src={getFullImageUrl(videocast.imageUrl)} alt={videocast.title} class="img-fluid rounded-3">
+                                            <div class="position-absolute bottom-0 start-0 w-100 d-flex flex-column px-4 py-3">
+                                                <h5 class="font-1 fw-bold lh-1">{videocast.title}</h5>
+                                                <div class="d-flex flex-row justify-content-center gap-5">
+                                                    <div class="d-flex flex-row align-items-center gap-2">
+                                                        <i class="fa-regular fa-clock accent-color"></i>
+                                                        {videocast.duration}
+                                                    </div>
+                                                    <div class="d-flex flex-row align-items-center gap-2">
+                                                        <i class="fa-solid fa-calendar-days accent-color"></i>
+                                                        {formattedDate}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <p>No hay videocasts disponibles.</p>
+                    )
+                }
+            </div>
+            <div class="d-flex justify-content-center">
+                <a href="/videocast" class="btn button font-1 ls-2">VER TODOS LOS VIDEOCAST
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

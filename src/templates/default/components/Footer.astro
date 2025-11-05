@@ -1,0 +1,376 @@
+---
+interface Props {
+  siteLogoFooter: string;
+  footerDescription: string;
+  socialNetworks: Record<string, string> | null;
+}
+
+const { siteLogoFooter, footerDescription, socialNetworks } = Astro.props;
+
+// Mapear nombres de redes sociales a iconos de FontAwesome
+const iconMap: Record<string, string> = {
+  'facebook': 'fa-facebook-f',
+  'instagram': 'fa-instagram',
+  'twitter': 'fa-twitter',
+  'x': 'fa-x-twitter',
+  'youtube': 'fa-youtube',
+  'tiktok': 'fa-tiktok',
+  'whatsapp': 'fa-whatsapp',
+  'telegram': 'fa-telegram',
+  'linkedin': 'fa-linkedin',
+  'spotify': 'fa-spotify',
+  'soundcloud': 'fa-soundcloud',
+};
+
+function getIconClass(network: string): string {
+  return iconMap[network.toLowerCase()] || `fa-${network.toLowerCase()}`;
+}
+
+const socialLinks = socialNetworks ? Object.entries(socialNetworks)
+    .filter(([network, url]) => {
+        if (network === 'createdAt' || network === 'updatedAt') {
+            return false;
+        }
+        return network && url && typeof url === 'string' && url.trim() !== '';
+    })
+    .map(([network, url]) => {
+        const link = network === 'whatsapp' ? `https://wa.me/${(url as string).replace(/\+/g, '')}` : url as string;
+        const iconClass = getIconClass(network);
+        const fullIconClass = `fa-brands ${iconClass}`;
+        return { network, link, fullIconClass };
+    }) : [];
+---
+
+<footer class="footer-enhanced py-5">
+  <div class="r-container">
+    <div class="row row-cols-1 row-cols-lg-3 g-4 mb-4">
+      <!-- Columna 1: Logo y Descripción -->
+      <div class="col">
+        <div class="d-flex flex-column gap-3 footer-column">
+          <div class="footer-logo-container">
+            <img src={siteLogoFooter} alt="Logo" class="footer-logo">
+          </div>
+          {footerDescription && (
+            <p class="footer-description font-2">
+              {footerDescription}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces Rápidos -->
+      <div class="col">
+        <div class="d-flex flex-column gap-3 footer-column">
+          <h5 class="footer-title font-1 fw-bold mb-3">
+            <i class="fa-solid fa-link me-2"></i>Enlaces Rápidos
+          </h5>
+          <ul class="footer-links list-unstyled d-flex flex-column gap-2">
+            <li>
+              <a href="/" class="footer-link">
+                <i class="fa-solid fa-home me-2"></i>
+                <span>Inicio</span>
+              </a>
+            </li>
+            <li>
+              <a href="/blog" class="footer-link">
+                <i class="fa-solid fa-newspaper me-2"></i>
+                <span>Noticias</span>
+              </a>
+            </li>
+            <li>
+              <a href="/podcasts" class="footer-link">
+                <i class="fa-solid fa-podcast me-2"></i>
+                <span>Podcasts</span>
+              </a>
+            </li>
+            <li>
+              <a href="/videocast" class="footer-link">
+                <i class="fa-solid fa-video me-2"></i>
+                <span>Videocast</span>
+              </a>
+            </li>
+            <li>
+              <a href="/contact" class="footer-link">
+                <i class="fa-solid fa-envelope me-2"></i>
+                <span>Contacto</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Columna 3: Redes Sociales -->
+      <div class="col">
+        <div class="d-flex flex-column gap-3 footer-column">
+          <h5 class="footer-title font-1 fw-bold mb-3">
+            <i class="fa-solid fa-share-nodes me-2"></i>Síguenos
+          </h5>
+          {socialLinks.length > 0 ? (
+            <div class="footer-social-container">
+              {socialLinks.map(({ network, link, fullIconClass }) => (
+                <a href={link} target="_blank" rel="noopener noreferrer" class="footer-social-item" title={network} aria-label={network}>
+                    <i class={fullIconClass}></i>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p class="footer-no-social font-2">Síguenos en nuestras redes sociales</p>
+          )}        </div>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="footer-copyright">
+      <div class="row">
+        <div class="col-12 text-center">
+          <p class="footer-copyright-text mb-0 font-2">
+            <i class="fa-solid fa-copyright me-2"></i>
+            {new Date().getFullYear()} Todos los derechos reservados.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer-enhanced {
+    background: linear-gradient(180deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .footer-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  .footer-column {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .footer-logo-container {
+    margin-bottom: 1rem;
+  }
+
+  .footer-logo {
+    height: 60px;
+    width: auto;
+    max-width: 200px;
+    filter: brightness(1.1);
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .footer-logo:hover {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+
+  .footer-description {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.8;
+    font-size: 0.95rem;
+  }
+
+  .footer-title {
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+  }
+
+  .footer-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: var(--accent-color);
+    border-radius: 2px;
+  }
+
+  .footer-title i {
+    color: var(--accent-color);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+  }
+
+  .footer-link {
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .footer-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: var(--accent-color);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+  }
+
+  .footer-link:hover {
+    color: white;
+    background: rgba(0, 74, 173, 0.1);
+    padding-left: 1rem;
+    transform: translateX(5px);
+  }
+
+  .footer-link:hover::before {
+    transform: scaleY(1);
+  }
+
+  .footer-link i {
+    color: var(--accent-color);
+    transition: transform 0.3s ease;
+  }
+
+  .footer-link:hover i {
+    transform: rotate(15deg) scale(1.2);
+  }
+
+  .footer-social-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-social-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+  }
+
+  .footer-social-item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--accent-color);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+    z-index: 0;
+  }
+
+  .footer-social-item i {
+    position: relative;
+    z-index: 1;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+
+  .footer-social-item:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 74, 173, 0.4);
+  }
+
+  .footer-social-item:hover::before {
+    width: 100%;
+    height: 100%;
+  }
+
+  .footer-social-item:hover i {
+    color: white;
+    transform: rotate(360deg) scale(1.2);
+  }
+
+  .footer-no-social {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+  }
+
+  .footer-copyright {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+  }
+
+  .footer-copyright::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 2px;
+    background: var(--accent-color);
+  }
+
+  .footer-copyright-text {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+  }
+
+  .footer-copyright-text i {
+    color: var(--accent-color);
+  }
+
+  @media (max-width: 991px) {
+    .footer-column {
+      margin-bottom: 2rem;
+    }
+
+    .footer-social-container {
+      justify-content: center;
+    }
+  }
+</style>

@@ -1,0 +1,26 @@
+---
+interface Props {
+  title: string;
+  siteLogoHeader: string;
+  siteLogoFooter: string;
+  footerDescription: string;
+  socialNetworks: Record<string, string> | null;
+}
+
+const { title, siteLogoHeader, siteLogoFooter, footerDescription, socialNetworks } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+  </head>
+  <body>
+    <!-- Header -->
+    <slot />
+    <script src="/assets/js/main.js" is:inline></script>
+  </body>
+</html>

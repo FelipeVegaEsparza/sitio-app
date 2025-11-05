@@ -1,0 +1,89 @@
+---
+import Layout from '~/templates/default/layouts/Layout.astro';
+import { getIpstreamData, getFullImageUrl } from '~/utils/api';
+import ContactForm from '~/templates/default/components/ContactForm.astro';
+
+const basicData = await getIpstreamData('/basic-data');
+const siteLogoHeader = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const siteLogoFooter = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const footerDescription = basicData?.projectDescription || '';
+
+const socialNetworks = await getIpstreamData('/social-networks');
+
+const layoutProps = {
+  title: "Goodsound - Contact Us",
+  siteLogoHeader,
+  siteLogoFooter,
+  footerDescription,
+  socialNetworks,
+};
+---
+
+<Layout {...layoutProps}>
+  <main>
+    <!-- BANNER -->
+    <section class="section position-relative" style="background-image: url(/image/contact-banner.png);">
+        <div class="image-overlay"></div>
+        <div class="r-container  position-relative" style="z-index: 2;">
+            <div class="d-flex flex-column">
+                <h2 class="font-1 fw-bold"><span class="accent-color">Contactanos</span> acá</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb font-2">
+                        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Contacto</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <section class="section position-relative">
+        <div class="texture-overlay"></div>
+        <div class="r-container position-relative" style="z-index: 2;">
+            <div class="row row-cols-1 row-cols-lg-2">
+                <div class="col mb-3">
+                    <div class="d-flex flex-column gap-3">
+                        <span class="fs-5">Nuestros datos de contacto.</span>
+                        <h3 class="font-1 fw-bold lh-1">Enivanos un <span class="accent-color">Mensaje</span>
+                        </h3>
+                        <p class="text-gray">En Radio IpsStream valoramos la conexión con nuestra audiencia. Si tienes consultas, comentarios, saludos, quieres enviar un mensaje al aire o proponer una colaboración, este es el lugar indicado.
+Completa el formulario con tus datos y tu mensaje, y nuestro equipo te responderá a la brevedad.
+¡Gracias por ser parte de nuestra comunidad y por mantener viva la energía de la radio online!
+                        </p>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex flex-row gap-3 align-items-center">
+                                
+                                
+                            </div>
+                            <div class="d-flex flex-row gap-3 align-items-center">
+                                <div class="rounded-circle bg-accent-color d-flex align-items-center justify-content-center"
+                                    style="width: 3rem; height: 3rem;">
+                                    <span class="text-white fs-3"><i class="fa-solid fa-phone"></i></span>
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <span class="fs-4 font-1 fw-bold">Numero de Contacto</span>
+                                    <span class="accent-color">+56 9 2191 12 16</span>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-row gap-3 align-items-center">
+                                <div class="rounded-circle bg-accent-color d-flex align-items-center justify-content-center"
+                                    style="width: 3rem; height: 3rem;">
+                                    <span class="text-white fs-3"><i class="fa-solid fa-envelope"></i></span>
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <span class="fs-4 font-1 fw-bold">Email</span>
+                                    <span class="accent-color">contacto@ipstream.cl</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="col mb-3">
+                    <ContactForm client:load />
+                </div>
+            </div>
+        </div>
+    </section>
+  </main>
+</Layout>

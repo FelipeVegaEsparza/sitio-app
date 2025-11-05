@@ -1,0 +1,22 @@
+---
+import { ACTIVE_TEMPLATE } from '../config.js';
+
+// Import the index pages from all templates
+import DefaultIndex from '../templates/default/pages/index.astro';
+import ModernIndex from '../templates/modern/pages/index.astro';
+import Template3Index from '../templates/template3/pages/index.astro';
+---
+{/* 
+  This component acts as a router.
+  It renders the correct index page based on the ACTIVE_TEMPLATE constant from config.js.
+*/}
+{(() => {
+    switch (ACTIVE_TEMPLATE) {
+        case 'modern':
+            return <ModernIndex />;
+        case 'template3':
+            return <Template3Index />;
+        default:
+            return <DefaultIndex />;
+    }
+})()}

@@ -1,0 +1,185 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+import Splide from '@splidejs/splide';
+import '@splidejs/splide/css';
+
+interface Promotion {
+    title: string;
+    description: string;
+    imageUrl: string;
+    link: string;
+}
+
+interface Props {
+  promotions: Promotion[];
+}
+
+const { promotions } = Astro.props;
+
+const promotionsArray = Array.isArray(promotions) ? promotions : (promotions && Array.isArray(promotions.data)) ? promotions.data : [];
+---
+
+{promotionsArray && promotionsArray.length > 0 && (
+    <div class="carousel-container">
+        <section id="promotions" class="splide promotions-carousel" aria-label="Promotions Carousel">
+            <div class="splide__track">
+                <ul class="splide__list">
+                    {promotionsArray.map(promo => (
+                        <li class="splide__slide">
+                            <div class="slide-background" style={`background-image: url(${getFullImageUrl(promo.imageUrl)})`}></div>
+                            <div class="slide-overlay"></div>
+                            <div class="slide-content">
+                                <h1 class="slide-title">{promo.title}</h1>
+                                <p class="slide-description">{promo.description}</p>
+                                <a href={promo.link} class="slide-button" target="_blank" rel="noopener noreferrer">Ver Más</a>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </section>
+    </div>
+)}
+
+<script>
+    document.addEventListener('astro:page-load', async () => {
+        const splideElement = document.querySelector('.promotions-carousel');
+        if (splideElement) {
+            try {
+                // Dynamically import the Splide library on the client
+                const { default: Splide } = await import('@splidejs/splide');
+
+                new Splide(splideElement, {
+                    type       : 'loop',
+                    perPage    : 1,
+                    autoplay   : true,
+                    interval   : 7000,
+                    pauseOnHover: true,
+                    arrows     : true,
+                    pagination : true,
+                    gap        : '1rem',
+                    easing     : 'cubic-bezier(0.25, 1, 0.5, 1)',
+                }).mount();
+            } catch (e) {
+                console.error("Failed to load or initialize Splide carousel:", e);
+            }
+        }
+    });
+</script>
+
+<style>
+    .carousel-container {
+        max-width: 1200px; /* Reverted to original width */
+        margin: 2rem auto; /* Center and add vertical spacing */
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .promotions-carousel {
+        width: 100%;
+        height: 45vh; /* Reduced height */
+        max-height: 400px; /* Reduced max-height */
+    }
+
+    .splide__track,
+    .splide__list {
+        height: 100%;
+    }
+
+    .splide__slide {
+        position: relative;
+        color: #fff;
+        height: 100%; /* Ensure slide takes full height of carousel */
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .slide-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .slide-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .slide-content {
+        position: relative;
+        z-index: 2;
+        max-width: 50%;
+        padding: 0 4rem;
+    }
+
+    .slide-title {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .slide-description {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .slide-button {
+        display: inline-block;
+        padding: 0.8rem 2.5rem;
+        background-color: #0d6efd;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .slide-button:hover {
+        background-color: #fff;
+        color: #0d6efd;
+        transform: translateY(-3px);
+    }
+
+    /* Splide Controls Customization */
+    .splide__arrow {
+        background: rgba(255, 255, 255, 0.2);
+        width: 2.5em;
+        height: 2.5em;
+    }
+    .splide__arrow:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
+    .splide__arrow svg {
+        fill: #fff;
+    }
+    .splide__pagination__page {
+        background: rgba(255, 255, 255, 0.5);
+        width: 12px;
+        height: 12px;
+        margin: 0 5px;
+    }
+    .splide__pagination__page.is-active {
+        background: #fff;
+        transform: scale(1.2);
+    }
+
+    @media (max-width: 768px) {
+        .slide-content {
+            max-width: 80%;
+            padding: 0 2rem;
+        }
+        .slide-title {
+            font-size: 2rem;
+        }
+    }
+</style>

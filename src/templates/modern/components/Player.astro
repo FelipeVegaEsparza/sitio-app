@@ -1,0 +1,251 @@
+---
+import { getStreamingUrl, getSonicPanelUrl } from '../../../utils/api';
+
+const streamingUrl = await getStreamingUrl();
+const sonicPanelUrl = await getSonicPanelUrl();
+
+const defaultSong = {
+  current_song: 'Sin título',
+  current_artist: 'Desconocido',
+  artwork_url: '/default-cover.jpg'
+};
+---
+
+<div class="player-container" id="player">
+  <div class="artwork-container">
+    <img id="current-artwork" src="/default-cover.jpg" alt="Album artwork">
+  </div>
+  
+  <div class="info-container">
+    <h2 id="current-song">Cargando...</h2>
+    <p id="current-artist">...</p>
+    <div class="controls">
+      <button id="playButton" class="play-button">
+        <span class="play-icon">▶</span>
+        <span class="pause-icon hidden">⏸</span>
+      </button>
+      <div class="volume-control">
+        <input type="range" id="volumeSlider" min="0" max="100" value="100">
+      </div>
+    </div>
+  </div>
+
+  <div class="status-container" id="status">
+    <span class="status-text"></span>
+    <span class="listeners-count"></span>
+  </div>
+</div>
+
+<script define:vars={{ streamingUrl, sonicPanelUrl, defaultSong }}>
+  let currentInterval = null;
+  let isPlaying = false;
+
+  // Elementos del DOM
+  const player = document.getElementById('player');
+  const status = document.getElementById('status');
+  const playButton = document.getElementById('playButton');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const currentSong = document.getElementById('current-song');
+  const currentArtist = document.getElementById('current-artist');
+  const currentArtwork = document.getElementById('current-artwork');
+
+  if (!player || !status || !playButton || !volumeSlider || !currentSong || !currentArtist || !currentArtwork) {
+    console.error('No se pudieron encontrar todos los elementos necesarios');
+    throw new Error('Elementos del DOM faltantes');
+  }
+
+  const audio = new Audio(streamingUrl);
+
+  // Estado del reproductor
+  const playerState = {
+    isLoading: false,
+    hasError: false,
+    errorMessage: '',
+    currentData: defaultSong
+  };
+
+  // Actualizar UI
+  function updatePlayerUI() {
+    if (playerState.isLoading) {
+      player.classList.add('loading');
+      status.textContent = 'Cargando...';
+    } else if (playerState.hasError) {
+      player.classList.add('error');
+      status.textContent = playerState.errorMessage;
+    } else {
+      player.classList.remove('loading', 'error');
+    }
+  }
+
+  // Manejadores de audio mejorados
+  function setupAudioHandlers() {
+    const handlers = {
+      playing: () => {
+        isPlaying = true;
+        playerState.hasError = false;
+        updatePlayerUI();
+      },
+      waiting: () => {
+        playerState.isLoading = true;
+        updatePlayerUI();
+      },
+      error: (e) => {
+        playerState.hasError = true;
+        playerState.errorMessage = 'Error en la reproducción';
+        updatePlayerUI();
+        console.error('Error de audio:', e);
+      },
+      ended: () => {
+        isPlaying = false;
+        playButton.classList.remove('playing');
+      }
+    };
+
+    Object.entries(handlers).forEach(([event, handler]) => {
+      audio.addEventListener(event, handler);
+    });
+
+    return () => {
+      Object.entries(handlers).forEach(([event, handler]) => {
+        audio.removeEventListener(event, handler);
+      });
+    };
+  }
+
+  // Función de actualización mejorada
+  async function updateNowPlaying() {
+    try {
+      playerState.isLoading = true;
+      updatePlayerUI();
+
+      const response = await fetch(sonicPanelUrl);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      playerState.currentData = { ...defaultSong, ...data };
+      
+      currentSong.textContent = playerState.currentData.current_song;
+      currentArtist.textContent = playerState.currentData.current_artist;
+      
+      if (playerState.currentData.artwork_url) {
+        currentArtwork.src = playerState.currentData.artwork_url;
+      }
+
+      playerState.isLoading = false;
+      playerState.hasError = false;
+    } catch (error) {
+      playerState.hasError = true;
+      playerState.errorMessage = 'Error actualizando información';
+      console.error('Error:', error);
+    } finally {
+      updatePlayerUI();
+    }
+  }
+
+  // Cleanup y setup mejorado
+  function setupIntervals() {
+    if (currentInterval) clearInterval(currentInterval);
+    currentInterval = setInterval(updateNowPlaying, 5000);
+  }
+
+  // Inicialización
+  const cleanup = setupAudioHandlers();
+  setupIntervals();
+
+  // Cleanup al desmontar
+  window.addEventListener('beforeunload', () => {
+    cleanup();
+    if (currentInterval) clearInterval(currentInterval);
+    audio.pause();
+    audio.src = '';
+  });
+</script>
+
+<style>
+  .player-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 0 auto;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .artwork-container {
+    width: 300px;
+    height: 300px;
+    margin-bottom: 2rem;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  .artwork-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .info-container {
+    text-align: center;
+    width: 100%;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .play-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: var(--secondary-color);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .play-button:hover {
+    transform: scale(1.1);
+  }
+
+  .volume-control {
+    width: 150px;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .playing .play-icon {
+    display: none;
+  }
+
+  .playing .pause-icon {
+    display: inline;
+  }
+
+  .status-container {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+
+  .player-container.loading {
+    opacity: 0.7;
+  }
+
+  .player-container.error {
+    border: 1px solid rgb(220, 38, 38);
+  }
+</style>

@@ -1,0 +1,260 @@
+---
+interface Props {
+  siteLogoHeader: string;
+  socialNetworks?: Record<string, string> | null;
+}
+
+const { siteLogoHeader, socialNetworks } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+// Mapear nombres de redes sociales a iconos de FontAwesome
+const iconMap: Record<string, string> = {
+  'facebook': 'fa-facebook-f',
+  'instagram': 'fa-instagram',
+  'twitter': 'fa-twitter',
+  'x': 'fa-x-twitter',
+  'youtube': 'fa-youtube',
+  'tiktok': 'fa-tiktok',
+  'whatsapp': 'fa-whatsapp',
+  'telegram': 'fa-telegram',
+  'linkedin': 'fa-linkedin',
+  'spotify': 'fa-spotify',
+  'soundcloud': 'fa-soundcloud',
+};
+
+function getIconClass(network: string): string {
+  return iconMap[network.toLowerCase()] || `fa-${network.toLowerCase()}`;
+}
+
+const socialLinks = socialNetworks ? Object.entries(socialNetworks)
+    .filter(([network, url]) => {
+        if (network === 'createdAt' || network === 'updatedAt') {
+            return false;
+        }
+        return network && url && typeof url === 'string' && url.trim() !== '';
+    })
+    .map(([network, url]) => {
+        const link = network === 'whatsapp' ? `https://wa.me/${(url as string).replace(/\+/g, '')}` : url as string;
+        const iconClass = getIconClass(network);
+        const fullIconClass = `fa-brands ${iconClass}`;
+        return { network, link, fullIconClass };
+    }) : [];
+---
+
+<header id="header" class="position-fixed top-0 start-0 w-100" style="z-index: 1000;">
+  <nav class="navbar navbar-expand-lg py-0">
+    <div class="r-container w-100 d-flex align-items-center">
+      <a class="navbar-brand py-3" href="/">
+        <img src={siteLogoHeader} alt="Logo" style="height: 50px; width: auto; max-width: 200px;">
+      </a>
+      <button class="navbar-toggler nav-btn d-lg-none ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="collapse navbar-collapse flex-grow-1" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item">
+            <a class={`nav-link ${currentPath === '/' ? 'active' : ''}`} href="/">
+              <i class="fa-solid fa-home me-2"></i>Inicio
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class={`nav-link ${currentPath.startsWith('/blog') ? 'active' : ''}`} href="/blog">
+              <i class="fa-solid fa-newspaper me-2"></i>Noticias
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class={`nav-link ${currentPath.startsWith('/podcasts') || currentPath.startsWith('/simple_podcast') ? 'active' : ''}`} href="/podcasts">
+              <i class="fa-solid fa-podcast me-2"></i>Podcasts
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class={`nav-link ${currentPath.startsWith('/videocast') || currentPath.startsWith('/simple_videocast') ? 'active' : ''}`} href="/videocast">
+              <i class="fa-solid fa-video me-2"></i>Videocast
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class={`nav-link ${currentPath === '/contact' ? 'active' : ''}`} href="/contact">
+              <i class="fa-solid fa-envelope me-2"></i>Contacto
+            </a>
+          </li>
+        </ul>
+        {socialLinks.length > 0 && (
+          <div class="header-social-container d-flex align-items-center ms-lg-3">
+            {socialLinks.map(({ network, link, fullIconClass }) => (
+                <a href={link} target="_blank" rel="noopener noreferrer" class="header-social-item" title={network} aria-label={network}>
+                    <i class={fullIconClass}></i>
+                </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </nav>
+</header>
+
+<style>
+  #header {
+    background-color: var(--secondary-dark);
+    backdrop-filter: blur(11px);
+    -webkit-backdrop-filter: blur(11px);
+    transition: all 0.5s ease;
+  }
+
+  .navbar {
+    min-height: 70px;
+  }
+
+  .navbar-brand {
+    flex-shrink: 0;
+  }
+
+  .navbar-nav {
+    gap: 0.5rem;
+  }
+
+  .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav-link:hover {
+    color: var(--accent-color) !important;
+    border-bottom-color: var(--accent-color);
+  }
+
+  .nav-link.active {
+    color: var(--accent-color) !important;
+    border-bottom-color: var(--accent-color);
+    font-weight: 600;
+  }
+
+  .nav-link i {
+    color: inherit;
+    transition: color 0.3s ease;
+  }
+
+  .header-social-container {
+    gap: 0.75rem;
+    padding-left: 1rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .header-social-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .header-social-item:hover {
+    background-color: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  .header-social-item i {
+    font-size: 0.9rem;
+  }
+
+  .navbar-toggler {
+    border: none;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .nav-btn {
+    width: 30px;
+    height: 24px;
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
+  }
+
+  .nav-btn span {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background: var(--accent-color);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+  }
+
+  .nav-btn.open span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+  }
+
+  .nav-btn.open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .nav-btn.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+  }
+
+  @media (min-width: 992px) {
+    .navbar-toggler {
+      display: none !important;
+    }
+
+    .navbar-collapse {
+      display: flex !important;
+      flex-basis: auto;
+    }
+  }
+
+  @media (max-width: 991px) {
+    #header {
+      background: #202020b3;
+      backdrop-filter: blur(11px);
+      -webkit-backdrop-filter: blur(11px);
+    }
+
+    .navbar-collapse {
+      background-color: var(--secondary-dark);
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 5px;
+    }
+
+    .nav-link {
+      padding: 0.75rem 1rem;
+      border-bottom: none;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      border-left-color: var(--accent-color);
+      border-bottom-color: transparent;
+    }
+
+    .nav-link i {
+      margin-right: 0.5rem;
+    }
+
+    .header-social-container {
+      display: flex !important;
+      flex-direction: row;
+      justify-content: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-left: none;
+      padding-left: 0;
+    }
+  }
+</style>

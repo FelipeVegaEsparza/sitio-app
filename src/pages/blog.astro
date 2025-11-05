@@ -1,0 +1,108 @@
+---
+import Layout from '~/templates/default/layouts/Layout.astro';
+import { getIpstreamData, getFullImageUrl } from '~/utils/api';
+
+const currentPage = parseInt(Astro.url.searchParams.get('page') || '1');
+const newsResponse = await getIpstreamData(`/news?limit=6&page=${currentPage}`);
+const allNews = newsResponse?.data || [];
+const pagination = newsResponse?.pagination || {};
+
+const basicData = await getIpstreamData('/basic-data');
+const siteLogoHeader = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const siteLogoFooter = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const footerDescription = basicData?.projectDescription || '';
+
+const socialNetworks = await getIpstreamData('/social-networks');
+
+const layoutProps = {
+  title: "Goodsound - Blog",
+  siteLogoHeader,
+  siteLogoFooter,
+  footerDescription,
+  socialNetworks,
+};
+---
+
+<Layout {...layoutProps}>
+  <main>
+    <!-- BANNER -->
+    <section class="section position-relative" style="background-image: url(/image/news-banner.png);">
+        <div class="image-overlay"></div>
+        <div class="r-container  position-relative" style="z-index: 2;">
+            <div class="d-flex flex-column">
+                <h2 class="font-1 fw-bold">Nuestras <span class="accent-color">Noticias</span></h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb font-2">
+                        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Noticias</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="r-container">
+            <div class="d-flex flex-column text-center gap-3">
+                <span class="fs-5">Nuestro Blog</span>
+                <h3 class="font-1 fw-bold"><span class="accent-color">Ultimas</span> Noticias</h3>
+                <p class="mx-auto text-gray" style="max-width: 768px;">
+                    Te mantenemos informado y conectado con lo que sucede en nuestra comunidad y en el mundo.
+Descubre las últimas novedades, entrevistas, lanzamientos, eventos y contenidos especiales preparados por nuestro equipo.
+Queremos ser más que una radio: un espacio de encuentro, opinión y actualidad.
+Explora nuestras publicaciones y entérate de todo lo que está pasando.
+                </p>
+                <div id="news-container" class="row row-cols-1 row-cols-lg-3 text-start">
+                    {
+                        allNews.length > 0 ? (
+                            allNews.map(newsItem => (
+                                <div class="col mb-3">
+                                    <div class="card border-0 bg-secondary-color p-3 shadow h-100">
+                                        <div class="news-card-image-container">
+                                            <img src={getFullImageUrl(newsItem.imageUrl)} class="news-card-image" alt={newsItem.name}>
+                                        </div>
+                                                                <div class="card-body text-white">
+                                                                    <h5 class="font-1 fw-bold ">{newsItem.name}</h5>
+                                                                    <p class="card-text">{newsItem.shortText.length > 120 ? `${newsItem.shortText.substring(0, 120)}…` : newsItem.shortText}</p>
+                                                                    <a href={`/blog/${newsItem.slug}`} class="btn link font-1 fw-bold">LEER MAS <i
+                                                                            class="fa-solid fa-arrow-right ms-2"></i></a>
+                                                                </div>                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No hay noticias disponibles.</p>
+                        )
+                    }
+                </div>
+                <div id="pagination-container" class="d-flex justify-content-center mt-4">
+                    {
+                        pagination.pages > 1 && (
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <li class={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                                        <a class="page-link" href={`/blog?page=${pagination.page - 1}`} aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    {
+                                        Array.from({ length: pagination.pages }, (_, i) => i + 1).map(page => (
+                                            <li class={`page-item ${page === pagination.page ? 'active' : ''}`}>
+                                                <a class="page-link" href={`/blog?page=${page}`}>{page}</a>
+                                            </li>
+                                        ))
+                                    }
+                                    <li class={`page-item ${pagination.page === pagination.pages ? 'disabled' : ''}`}>
+                                        <a class="page-link" href={`/blog?page=${pagination.page + 1}`} aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        )
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+  </main>
+</Layout>

@@ -1,0 +1,89 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Podcast {
+    title: string;
+    description: string;
+    imageUrl: string;
+    audioUrl: string;
+    duration: string;
+    episodeNumber: number;
+    season: string;
+}
+
+interface Props {
+  podcast: Podcast;
+}
+
+const { podcast } = Astro.props;
+---
+
+<div class="podcast-card">
+    <img src={getFullImageUrl(podcast.imageUrl)} alt={podcast.title} class="card-image" />
+    <div class="card-content">
+        <h3 class="card-title">{podcast.title}</h3>
+        <button 
+            class="play-button"
+            data-audio-url={getFullImageUrl(podcast.audioUrl)}
+            data-image-url={getFullImageUrl(podcast.imageUrl)}
+            data-title={podcast.title}
+            data-description={podcast.description}
+            data-duration={podcast.duration}
+            data-episode-number={podcast.episodeNumber}
+            data-season={podcast.season}
+            aria-label={`Reproducir ${podcast.title}`}
+        >
+            Reproducir Episodio
+        </button>
+    </div>
+</div>
+
+<style>
+    .podcast-card {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+        /* Glassmorphism */
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    }
+    .podcast-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .card-image {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+    }
+    .card-content {
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .card-title {
+        margin: 0 0 1rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #212529;
+    }
+    .play-button {
+        background-color: #0d6efd;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .play-button:hover {
+        background-color: #0b5ed7;
+    }
+</style>

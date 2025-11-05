@@ -1,0 +1,16 @@
+---
+interface Props {
+  socialNetworks: any;
+}
+
+const { socialNetworks } = Astro.props;
+
+const whatsappNumber = socialNetworks?.whatsapp || ''; // Obtener el número de WhatsApp de las props
+const whatsappUrl = `https://wa.me/${whatsappNumber}`;
+---
+
+<a href={whatsappUrl} target="_blank" rel="noopener noreferrer" class="whatsapp-float">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<link rel="stylesheet" href="../styles/whatsapp-button.css">

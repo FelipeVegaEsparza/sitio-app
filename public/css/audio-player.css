@@ -1,0 +1,64 @@
+/* Estilos para el reproductor de audio */
+
+/* Botón de reproducción */
+#audio-play-button {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#audio-play-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+#audio-play-button:active {
+    transform: translateY(1px);
+}
+
+/* Estado de reproducción activa */
+#audio-play-button.playing {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+/* Contenedor del reproductor fallback */
+#audio-fallback {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    z-index: 9998;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    display: none;
+    transition: all 0.3s ease;
+}
+
+/* Botón de cerrar el reproductor fallback */
+#audio-fallback .close-fallback {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+#audio-fallback .close-fallback:hover {
+    opacity: 1;
+}
+
+/* Estilos para el botón de reproducción en vivo */
+#play-live-button {
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#play-live-button:hover {
+    transform: scale(1.05);
+}
+
+#play-live-button:active {
+    transform: scale(0.95);
+}

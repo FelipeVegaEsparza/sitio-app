@@ -1,0 +1,27 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/audio-player.css">
+    <link rel="stylesheet" href="/css/audio-visualizer.css">
+    <link rel="stylesheet" href="/css/css-visualizer.css">
+    <link rel="stylesheet" href="/css/modal-custom.css">
+    <link rel="stylesheet" href="/css/visualizer-button.css">
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

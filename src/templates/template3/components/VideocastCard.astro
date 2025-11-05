@@ -1,0 +1,104 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Videocast {
+    title: string;
+    description: string;
+    imageUrl: string;
+    videoUrl: string;
+}
+
+interface Props {
+  videocast: Videocast;
+}
+
+const { videocast } = Astro.props;
+---
+
+<div class="videocast-card">
+    <img src={getFullImageUrl(videocast.imageUrl)} alt={videocast.title} class="card-image" />
+    <div class="card-overlay"></div>
+    <div class="card-content">
+        <h3 class="card-title">{videocast.title}</h3>
+        <button 
+            class="play-button"
+            data-video-url={videocast.videoUrl}
+            data-title={videocast.title}
+            data-description={videocast.description}
+            aria-label={`Reproducir ${videocast.title}`}
+        >
+            <i class="fas fa-play"></i>
+        </button>
+    </div>
+</div>
+
+<style>
+    .videocast-card {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        color: #fff;
+    }
+    .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .card-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.2);
+        transition: background-color 0.3s ease;
+        /* Glassmorphism on overlay */
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+    }
+    .videocast-card:hover .card-overlay {
+        background: rgba(0,0,0,0.4);
+    }
+    .card-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 1.5rem;
+    }
+    .card-title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    }
+    .play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.9);
+        color: #0d6efd;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        opacity: 0.8;
+    }
+    .videocast-card:hover .play-button {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+    }
+</style>

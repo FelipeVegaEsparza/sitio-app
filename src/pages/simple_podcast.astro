@@ -1,0 +1,168 @@
+---
+import Layout from '../templates/default/layouts/Layout.astro';
+import { getIpstreamData, getFullImageUrl } from '../utils/api';
+
+const podcastId = Astro.url.searchParams.get('id');
+const podcast = await getIpstreamData(`/podcasts/${podcastId}`);
+
+const otherPodcastsResponse = await getIpstreamData('/podcasts?limit=4');
+const otherPodcasts = otherPodcastsResponse?.data || [];
+
+const basicData = await getIpstreamData('/basic-data');
+const siteLogoHeader = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const siteLogoFooter = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '/image/logo.png';
+const footerDescription = basicData?.projectDescription || '';
+
+const socialNetworks = await getIpstreamData('/social-networks');
+
+const layoutProps = {
+  title: podcast?.title || "Podcast",
+  siteLogoHeader,
+  siteLogoFooter,
+  footerDescription,
+  socialNetworks,
+};
+
+function formatDuration(duration: string) {
+    if (!duration) return '';
+    
+    var durationParts = duration.split(':');
+    var formattedDuration = '';
+    if (durationParts.length === 3) { 
+        formattedDuration = durationParts[0] + 'hr ' + durationParts[1] + 'm';
+    } else if (durationParts.length === 2) {
+        formattedDuration = durationParts[0] + 'm ' + durationParts[1] + 's';
+    } else {
+        formattedDuration = duration;
+    }
+    return formattedDuration;
+}
+---
+
+<Layout {...layoutProps}>
+  <main>
+    <!-- BANNER -->
+    <section class="section position-relative" style={`background-image: url(${podcast ? getFullImageUrl(podcast.imageUrl) : '/image/dummy-img-1920x900.jpg'});`}>
+        <div class="image-overlay"></div>
+        <div class="r-container position-relative" style="z-index: 2;">
+            <div class="d-flex flex-column">
+                <h2 class="font-1 fw-bold"><span class="accent-color">Podcast </span>Detalle</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb font-2">
+                        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Podcast</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="r-container">
+            <div class="d-flex flex-lg-row flex-column-reverse gap-3">
+                <div class="col col-lg-4 pe-lg-4">
+                    <div class="d-flex flex-column gap-3">
+                        <div class="bg-secondary-color d-flex flex-column gap-3 rounded-3 px-5 py-4">
+                            <h5 class="accent-color border-bottom border-accent-color pb-2 font-1 fw-bold">Otros Podcast</h5>
+                            <div id="otros-podcast-container" class="d-flex flex-column gap-3">
+                                {
+                                    otherPodcasts.filter(p => p.id !== podcastId).slice(0, 3).map(otherPodcast => (
+                                        <div class="row row-cols-2">
+                                            <div class="col-5">
+                                                <img src={getFullImageUrl(otherPodcast.imageUrl)} alt={otherPodcast.title}
+                                                    class="img-fluid rounded-3">
+                                            </div>
+                                            <div class="col-7 p-0 d-flex flex-column justify-content-center">
+                                                <a href={`/simple_podcast?id=${otherPodcast.id}`} class="link-white font-1">{otherPodcast.title}</a>
+                                                <span class="accent-color">{new Date(otherPodcast.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="bg-secondary-color d-flex flex-column gap-3 rounded-3 px-5 py-4">
+                            <h5 class="accent-color border-bottom border-accent-color pb-2 font-1 fw-bold">
+                                Siguenos en la Redes</h5>
+                            <div class="social-container mb-lg-0 mb-3" id="siguenos-social-links">
+                                {
+                                    socialNetworks && Object.entries(socialNetworks)
+                                    .filter(([network, url]) => {
+                                        if (network === 'createdAt' || network === 'updatedAt') {
+                                            return false;
+                                        }
+                                        return network && url && typeof url === 'string' && url.trim() !== '';
+                                    })
+                                    .map(([network, url]) => {
+                                        const link = network === 'whatsapp' ? `https://wa.me/${(url as string).replace(/\+/g, '')}` : url as string;
+                                        return (
+                                            <a href={link} class="social-item" target="_blank">
+                                                <i class={`fa-brands fa-${network}`}></i>
+                                            </a>
+                                        )
+                                    })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="podcast-detail-container" class="col col-lg-8">
+                    {
+                        podcast ? (
+                            <div class="d-flex flex-column gap-4">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="position-relative" style="height: 250px;">
+                                            <img src={getFullImageUrl(podcast.imageUrl)} alt={podcast.title} class="img-fluid rounded-3 w-100 h-100 object-fit-cover" style="object-position: center;">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h2 class="font-1 fw-bold lh-1">{podcast.title}</h2>
+                                        <div class="d-flex flex-row gap-5 mt-3">
+                                            <div class="d-flex flex-row align-items-center gap-2">
+                                                <i class="fa-solid fa-user accent-color"></i>
+                                                <span>Goodsound</span>
+                                            </div>
+                                            <div class="d-flex flex-row align-items-center gap-2">
+                                                <i class="fa-solid fa-calendar accent-color"></i>
+                                                <span>{new Date(podcast.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                            </div>
+                                            <div class="d-flex flex-row align-items-center gap-2">
+                                                <i class="fa-regular fa-clock accent-color"></i>
+                                                <span>{formatDuration(podcast.duration)}</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <ul class="list-unstyled text-gray">
+                                                <li class="mb-2"><strong>Temporada:</strong> {podcast.season || 'N/A'}</li>
+                                                <li class="mb-2"><strong>Episodio:</strong> {podcast.episodeNumber || 'N/A'}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <p>{podcast.description}</p>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h4 class="font-1 fw-bold mb-3">Escuchar Episodio</h4>
+                                    <div class="bg-secondary-color p-3 rounded-3">
+                                        <audio class="w-100" controls>
+                                            <source src={getFullImageUrl(podcast.audioUrl)} type="audio/mpeg">
+                                            Tu navegador no soporta el elemento de audio.
+                                        </audio>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div class="alert alert-danger">No se encontró el podcast solicitado</div>
+                        )
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+  </main>
+</Layout>

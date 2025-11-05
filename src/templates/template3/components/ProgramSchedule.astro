@@ -1,0 +1,280 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Program {
+    id: string;
+    name: string;
+    imageUrl: string;
+    description: string;
+    startTime: string;
+    endTime: string;
+    weekDays: string[];
+}
+
+interface Props {
+    programs: Program[];
+}
+
+const { programs } = Astro.props;
+
+const programsArray = Array.isArray(programs) ? programs : (programs && Array.isArray(programs.data)) ? programs.data : [];
+
+const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const dayTranslations: { [key: string]: string } = {
+    monday: 'Lunes',
+    tuesday: 'Martes',
+    wednesday: 'Miércoles',
+    thursday: 'Jueves',
+    friday: 'Viernes',
+    saturday: 'Sábado',
+    sunday: 'Domingo'
+};
+
+const schedule: { [key: string]: Program[] } = {};
+
+for (const day of dayOrder) {
+    schedule[day] = [];
+}
+
+programsArray.forEach(program => {
+    program.weekDays.forEach(day => {
+        if (schedule[day]) {
+            schedule[day].push(program);
+        }
+    });
+});
+
+for (const day in schedule) {
+    schedule[day].sort((a, b) => a.startTime.localeCompare(b.startTime));
+}
+
+const today = dayOrder[new Date().getDay() -1] || 'sunday';
+---
+
+<section id="schedule" class="program-schedule-section">
+    <div class="container">
+        <div class="section-title-wrapper">
+            <div class="title-left">
+                <i class="section-icon fas fa-calendar-alt"></i>
+                <h2 class="section-title">Nuestra Programación</h2>
+            </div>
+            <p class="section-description">Conoce nuestra parrilla semanal.</p>
+        </div>
+        <div class="tabs">
+            <div class="tab-header">
+                {dayOrder.map(day => (
+                    <button class="tab-link" data-day={day} class:list={{ active: day === today }}>
+                        {dayTranslations[day]}
+                    </button>
+                ))}
+            </div>
+            <div class="tab-content">
+                {dayOrder.map(day => (
+                    <div id={day} class="tab-pane" class:list={{ active: day === today }}>
+                        {schedule[day].length > 0 ? (
+                            <div class="schedule-list">
+                                {schedule[day].map(program => (
+                                    <div class="program-item">
+                                        <img src={getFullImageUrl(program.imageUrl)} alt={program.name} class="program-image" />
+                                        <div class="program-details">
+                                            <div class="program-time">{program.startTime} - {program.endTime}</div>
+                                            <h3 class="program-name">{program.name}</h3>
+                                            <p class="program-description">{program.description}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p class="no-programs">No hay programas para este día.</p>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const tabHeaders = document.querySelectorAll('.tab-link');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const day = header.getAttribute('data-day');
+
+                tabHeaders.forEach(h => h.classList.remove('active'));
+                tabPanes.forEach(p => p.classList.remove('active'));
+
+                header.classList.add('active');
+                document.getElementById(day).classList.add('active');
+            });
+        });
+    });
+</script>
+
+<style>
+    .program-schedule-section {
+        padding: 4rem 2rem;
+        background-color: #fff;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .section-title-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between; /* Pushes title and description apart */
+        margin-bottom: 2.5rem;
+        animation: fadeInDown 0.8s ease-out;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1.5rem;
+    }
+    .title-left {
+        display: flex;
+        align-items: center;
+    }
+    .section-icon {
+        font-size: 1.8rem; /* Slightly smaller icon */
+        color: #0d6efd;
+        margin-right: 1rem; /* Space between icon and title */
+    }
+    .section-title {
+        font-size: 2.2rem; /* Slightly smaller title */
+        font-weight: 700;
+        text-align: left;
+        margin: 0;
+        color: #212529;
+    }
+    .section-description {
+        font-size: 1rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .tabs {
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .tab-header {
+        display: flex;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        overflow-x: auto;
+        justify-content: center;
+    }
+    .schedule-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    .program-item {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    .program-item:last-child {
+        border-bottom: none;
+    }
+    .tab-link {
+        padding: 1rem 1.5rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #495057;
+        transition: color 0.3s, border-bottom 0.3s;
+        white-space: nowrap;
+        border-bottom: 3px solid transparent;
+    }
+    .tab-link.active, .tab-link:hover {
+        color: #0d6efd;
+        border-bottom-color: #0d6efd;
+    }
+    .tab-content {
+        padding: 2rem;
+    }
+    .tab-pane {
+        display: none;
+    }
+    .tab-pane.active {
+        display: block;
+    }
+    .schedule-list {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1.5rem; /* Adjust gap for horizontal spacing */
+    }
+    .program-item {
+        display: flex;
+        flex-direction: column; /* Stack image and details vertically within each program item */
+        width: calc(33% - 1rem); /* Approx 3 items per row, adjust as needed */
+        min-width: 280px; /* Minimum width for program item */
+        gap: 0.75rem;
+        align-items: flex-start;
+        padding: 1rem;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background-color: #fdfdfd;
+        transition: transform 0.2s ease;
+    }
+    .program-item:hover {
+        transform: translateY(-5px);
+    }
+    .program-image {
+        width: 100%;
+        height: 180px; /* Fixed height for images */
+        border-radius: 8px;
+        object-fit: cover;
+    }
+    .program-details {
+        flex: 1;
+        width: 100%; /* Ensure details take full width within item */
+    }
+    .program-time {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    .program-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+    }
+    .program-description {
+        font-size: 0.9rem;
+        color: #495057;
+        margin: 0;
+    }
+
+    @media (max-width: 992px) {
+        .program-item {
+            width: calc(50% - 0.75rem); /* 2 items per row on medium screens */
+        }
+    }
+
+    @media (max-width: 768px) {
+        .program-item {
+            width: 100%; /* 1 item per row on small screens */
+        }
+    }
+</style>

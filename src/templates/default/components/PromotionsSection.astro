@@ -1,0 +1,76 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Props {
+    promotions: any[];
+}
+
+const { promotions } = Astro.props;
+---
+
+{promotions && promotions.length > 0 && (
+<section class="section bg-dark">
+    <div class="r-container">
+        <div class="section-header text-center mb-5">
+            <span class="fs-5 accent-color text-uppercase fw-bold" style="letter-spacing: 2px;">Promociones</span>
+            <h2 class="font-1 fw-bold mt-2">Descubre Nuestras <span class="accent-color">Ofertas Especiales</span></h2>
+            <p class="text-gray mt-3 mx-auto" style="max-width: 600px;">
+                No te pierdas estas increíbles oportunidades y beneficios exclusivos que tenemos para ti
+            </p>
+        </div>
+
+        <div class="row g-4">
+            {promotions.map(promo => (
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="promotion-card">
+                        <div class="promotion-image-container">
+                            <img
+                                src={getFullImageUrl(promo.imageUrl)}
+                                alt={promo.title}
+                                class="promotion-image"
+                                loading="lazy"
+                            />
+                            <div class="promotion-badge">
+                                <i class="fa-solid fa-star"></i>
+                                <span>Destacado</span>
+                            </div>
+                        </div>
+
+                        <div class="promotion-content">
+                            <h3 class="promotion-title">{promo.title}</h3>
+
+                            <div class="promotion-description">
+                                {promo.description.split('\n').map(line => (
+                                    line.trim() && <p>{line}</p>
+                                ))}
+                            </div>
+
+                            {promo.link && (
+                                <div class="promotion-action">
+                                    <a
+                                        href={promo.link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="btn btn-promotion"
+                                    >
+                                        <span>Más Información</span>
+                                        <i class="fa-solid fa-arrow-right ms-2"></i>
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        {promotions.length > 3 && (
+            <div class="text-center mt-5">
+                <button class="btn button font-1 ls-2">
+                    VER MÁS PROMOCIONES
+                </button>
+            </div>
+        )}
+    </div>
+</section>
+)}

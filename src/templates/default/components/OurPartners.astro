@@ -1,0 +1,53 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Props {
+    sponsors: any[];
+}
+
+const { sponsors } = Astro.props;
+---
+
+<section class="section bg-secondary-color">
+    <div class="r-container">
+        <div class="d-flex flex-column text-center gap-3">
+            <span class="fs-5">Auspiciadores</span>
+            <h3 class="font-1 fw-bold lh-1">Con el <span class="accent-color">auspicio</span> de:</h3>
+            <p class="mx-auto text-gray" style="max-width: 768px;">Conoce a las empresas que hacen posible nuestro trabajo y nos apoyan para seguir creciendo. Visita sus sitios web y redes sociales para descubrir todo lo que tienen para ofrecer.
+            </p>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 justify-content-center">
+                {
+                    sponsors && sponsors.length > 0 ? (
+                        sponsors.map(sponsor => (
+                            <div class="col mb-3">
+                                <div class="card border-0 bg-secondary-color p-3 shadow h-100">
+                                    <div class="text-center mb-3" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                                        <img src={getFullImageUrl(sponsor.logoUrl)} alt={sponsor.name} class="img-fluid" style="max-width: 100%; max-height: 140px; object-fit: contain;">
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <h5 class="font-1 fw-bold text-center">{sponsor.name}</h5>
+                                        <p class="card-text small text-center">{sponsor.description || ''}</p>
+                                        {sponsor.website && <div class="text-center"><a href={sponsor.website} target="_blank" class="btn link font-1 fw-bold btn-sm">VISITAR <i class="fa-solid fa-arrow-right ms-2"></i></a></div>}
+                                    </div>
+                                    {(sponsor.facebook || sponsor.instagram || sponsor.youtube || sponsor.tiktok || sponsor.whatsapp || sponsor.x) && (
+                                        <div class="card-footer bg-transparent border-0">
+                                            <div class="social-container mb-0 justify-content-center">
+                                                {sponsor.facebook && <a href={sponsor.facebook} target="_blank" class="social-item"><i class="fa-brands fa-facebook-f"></i></a>}
+                                                {sponsor.instagram && <a href={sponsor.instagram} target="_blank" class="social-item"><i class="fa-brands fa-instagram"></i></a>}
+                                                {sponsor.youtube && <a href={sponsor.youtube} target="_blank" class="social-item"><i class="fa-brands fa-youtube"></i></a>}
+                                                {sponsor.tiktok && <a href={sponsor.tiktok} target="_blank" class="social-item"><i class="fa-brands fa-tiktok"></i></a>}
+                                                {sponsor.whatsapp && <a href={sponsor.whatsapp} target="_blank" class="social-item"><i class="fa-brands fa-whatsapp"></i></a>}
+                                                {sponsor.x && <a href={sponsor.x} target="_blank" class="social-item"><i class="fa-brands fa-twitter"></i></a>}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No hay auspiciadores disponibles.</p>
+                    )
+                }
+            </div>
+        </div>
+    </section>

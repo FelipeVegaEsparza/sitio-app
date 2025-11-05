@@ -1,0 +1,206 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Sponsor {
+    id: string;
+    name: string;
+    logoUrl: string;
+    address: string;
+    description: string;
+    facebook: string;
+    youtube: string;
+    instagram: string;
+    tiktok: string;
+    whatsapp: string;
+    x: string;
+    website: string;
+}
+
+interface Props {
+    sponsors: Sponsor[];
+}
+
+const { sponsors } = Astro.props;
+
+const sponsorsArray = Array.isArray(sponsors) ? sponsors : (sponsors && Array.isArray(sponsors.data)) ? sponsors.data : [];
+
+const getSocialIcon = (name: string) => {
+    switch (name.toLowerCase()) {
+        case 'facebook': return 'fab fa-facebook-f';
+        case 'youtube': return 'fab fa-youtube';
+        case 'instagram': return 'fab fa-instagram';
+        case 'tiktok': return 'fab fa-tiktok';
+        case 'whatsapp': return 'fab fa-whatsapp';
+        case 'x': return 'fab fa-x-twitter';
+        case 'website': return 'fas fa-globe';
+        default: return 'fas fa-link';
+    }
+};
+---
+
+<section id="sponsors" class="sponsors-section">
+    <div class="container">
+        <div class="section-title-wrapper">
+            <div class="title-left">
+                <i class="section-icon fas fa-star"></i>
+                <h2 class="section-title">Nuestros Auspiciadores</h2>
+            </div>
+            <p class="section-description">Las marcas que confían en nosotros.</p>
+        </div>
+        <div class="sponsors-grid">
+            {sponsorsArray.map(sponsor => {
+                const socialLinks = [
+                    { name: 'facebook', url: sponsor.facebook },
+                    { name: 'youtube', url: sponsor.youtube },
+                    { name: 'instagram', url: sponsor.instagram },
+                    { name: 'tiktok', url: sponsor.tiktok },
+                    { name: 'whatsapp', url: sponsor.whatsapp },
+                    { name: 'x', url: sponsor.x },
+                    { name: 'website', url: sponsor.website },
+                ].filter(link => link.url);
+
+                return (
+                    <div class="sponsor-card">
+                        <img src={getFullImageUrl(sponsor.logoUrl)} alt={`Logo de ${sponsor.name}`} class="sponsor-logo" />
+                        <div class="sponsor-content">
+                            <h3 class="sponsor-name">{sponsor.name}</h3>
+                            <p class="sponsor-description">{sponsor.description}</p>
+                            {sponsor.address && (
+                                <p class="sponsor-address">
+                                    <i class="fas fa-map-marker-alt"></i> {sponsor.address}
+                                </p>
+                            )}
+                            {socialLinks.length > 0 && (
+                                <div class="sponsor-socials">
+                                    {socialLinks.map(link => (
+                                        <a href={link.url} target="_blank" rel="noopener noreferrer" aria-label={link.name}>
+                                            <i class={getSocialIcon(link.name)}></i>
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+    </div>
+</section>
+
+<style>
+    .sponsors-section {
+        padding: 4rem 2rem;
+        background-color: #fff;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .section-title-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between; /* Pushes title and description apart */
+        margin-bottom: 2.5rem;
+        animation: fadeInDown 0.8s ease-out;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1.5rem;
+    }
+    .title-left {
+        display: flex;
+        align-items: center;
+    }
+    .section-icon {
+        font-size: 1.8rem; /* Slightly smaller icon */
+        color: #0d6efd;
+        margin-right: 1rem; /* Space between icon and title */
+    }
+    .section-title {
+        font-size: 2.2rem; /* Slightly smaller title */
+        font-weight: 700;
+        text-align: left;
+        margin: 0;
+        color: #212529;
+    }
+    .section-description {
+        font-size: 1rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .sponsors-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+    }
+    .sponsor-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    .sponsor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .sponsor-logo {
+        width: 100%;
+        height: 200px;
+        object-fit: contain; /* Use contain to avoid cropping logos */
+        background-color: #fff;
+        padding: 1rem;
+    }
+    .sponsor-content {
+        padding: 1.5rem;
+        text-align: center;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .sponsor-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+    }
+    .sponsor-description {
+        color: #495057;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+    }
+    .sponsor-address {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    .sponsor-address i {
+        margin-right: 0.5rem;
+    }
+    .sponsor-socials {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: auto; /* Pushes socials to the bottom */
+    }
+    .sponsor-socials a {
+        color: #6c757d;
+        font-size: 1.5rem;
+        transition: color 0.3s ease;
+    }
+    .sponsor-socials a:hover {
+        color: #0d6efd;
+    }
+</style>

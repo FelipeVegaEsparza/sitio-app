@@ -1,0 +1,45 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Props {
+    programs: any[];
+}
+
+const { programs } = Astro.props;
+---
+
+<section class="section">
+    <div class="r-container">
+        <div class="d-flex flex-column gap-3 text-center">
+            <h3 class="font-1 fw-bold">Nuestros <span class="accent-color">Programas</span></h3>
+            <p class="mx-auto text-gray" style="max-width: 768px;">tenemos una parrilla pensada para todos los gustos y momentos del día.
+Disfruta de la mejor música, programas en vivo, entrevistas, noticias, reflexiones y mucho más, acompañados por nuestras y nuestros locutores que dan vida a cada emisión.
+Revisa los horarios y no te pierdas tus espacios favoritos.
+¡Sintoniza, participa y vive la experiencia de la radio online!</p>
+            <div class="row row-cols-1 row-cols-lg-3">
+                {
+                    programs && programs.length > 0 ? (
+                        programs.map(program => (
+                            <div class="col mb-3">
+                                <div class="d-flex flex-column bg-secondary-color p-4 rounded-3">
+                                    <img src={getFullImageUrl(program.imageUrl)} alt={program.name} class="img-fluid rounded-3 mb-3">
+                                    <div class="mb-4">
+                                        <h5 class="font-1 fw-bold m-0 lh-1">{program.name}</h5>
+                                        <span class="accent-color">{program.startTime} - {program.endTime}</span>
+                                    </div>
+                                    <p class="text-gray">{program.description}</p>
+                                    <div class="social-container mb-3 justify-content-center">
+                                        {program.facebook && <a href={program.facebook} class="social-item"><i class="fa-brands fa-facebook-f"></i></a>}
+                                        {program.twitter && <a href={program.twitter} class="social-item"><i class="fa-brands fa-twitter"></i></a>}
+                                        {program.youtube && <a href={program.youtube} class="social-item"><i class="fa-brands fa-youtube"></i></a>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No hay programas disponibles.</p>
+                    )
+                }
+            </div>
+        </div>
+    </section>

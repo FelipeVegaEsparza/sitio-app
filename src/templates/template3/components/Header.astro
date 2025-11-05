@@ -1,0 +1,181 @@
+---
+import { getFullImageUrl } from '../../../utils/api';
+
+interface Props {
+  basicData: any;
+  socialNetworks: any;
+}
+
+const { basicData, socialNetworks } = Astro.props;
+
+const siteLogoHeader = basicData?.logoUrl ? getFullImageUrl(basicData.logoUrl) : '';
+
+const iconMap: Record<string, string> = {
+  'facebook': 'fa-facebook-f', 'instagram': 'fa-instagram', 'twitter': 'fa-twitter',
+  'x': 'fa-x-twitter', 'youtube': 'fa-youtube', 'tiktok': 'fa-tiktok',
+  'whatsapp': 'fa-whatsapp', 'telegram': 'fa-telegram', 'linkedin': 'fa-linkedin',
+  'spotify': 'fa-spotify', 'soundcloud': 'fa-soundcloud',
+};
+
+function getIconClass(network: string): string {
+  return iconMap[network.toLowerCase()] || `fa-${network.toLowerCase()}`;
+}
+
+const socialLinks = socialNetworks ? Object.entries(socialNetworks)
+    .filter(([network, url]) => {
+        if (network === 'createdAt' || network === 'updatedAt') return false;
+        return network && url && typeof url === 'string' && url.trim() !== '';
+    })
+    .map(([network, url]) => {
+        const link = network === 'whatsapp' ? `https://wa.me/${(url as string).replace(/\+/g, '')}` : url as string;
+        const iconClass = getIconClass(network);
+        const fullIconClass = `fa-brands ${iconClass}`;
+        return { network, link, fullIconClass };
+    }) : [];
+---
+<header id="main-header" class="main-header">
+    <div class="header-content">
+        <div class="logo">
+            {siteLogoHeader && <a href="/"><img src={siteLogoHeader} alt="Logo"></a>}
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="#news"><i class="fas fa-newspaper"></i> Noticias</a></li>
+                <li><a href="#videocasts"><i class="fas fa-video"></i> Videocasts</a></li>
+                <li><a href="#podcasts"><i class="fas fa-podcast"></i> Podcasts</a></li>
+                <li><a href="#schedule"><i class="fas fa-calendar-alt"></i> Programación</a></li>
+                <li><a href="#sponsors"><i class="fas fa-star"></i> Auspiciadores</a></li>
+            </ul>
+        </nav>
+        {socialLinks.length > 0 && (
+            <div class="socials">
+                {socialLinks.map(({ network, link, fullIconClass }) => (
+                    <a href={link} target="_blank" rel="noopener noreferrer" title={network} aria-label={network}>
+                        <i class={fullIconClass}></i>
+                    </a>
+                ))}
+            </div>
+        )}
+    </div>
+</header>
+
+<script>
+    let lastScrollTop = 0;
+    const header = document.getElementById('main-header');
+
+    window.addEventListener("scroll", function() {
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > lastScrollTop && scrollTop > 80) {
+            // Downscroll
+            header.style.transform = "translateY(-100%)";
+        } else {
+            // Upscroll
+            header.style.transform = "translateY(0)";
+        }
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }, false);
+</script>
+
+<style>
+    .main-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        padding: 1rem 0;
+        transition: transform 0.4s ease-in-out;
+        
+        /* Improved Glassmorphism */
+        background: rgba(25, 28, 32, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content {
+        /* Manually coded container for guaranteed alignment */
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo img {
+        height: 45px;
+        width: auto;
+        transition: transform 0.3s ease;
+    }
+    .logo img:hover {
+        transform: scale(1.05);
+    }
+
+    .main-nav ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        gap: 1.5rem;
+    }
+    .main-nav a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        position: relative;
+        transition: color 0.3s ease;
+    }
+    .main-nav a::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #fff;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    .main-nav a:hover {
+        color: #fff;
+    }
+    .main-nav a:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+
+    .socials {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .socials a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.1);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .socials a:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+        color: #fff;
+    }
+</style>

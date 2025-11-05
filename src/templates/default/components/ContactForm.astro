@@ -1,0 +1,106 @@
+---
+// Este componente no necesita props, ya que maneja su propio estado en el cliente.
+---
+
+<div class="h-100 d-flex flex-column bg-secondary-color rounded-3 p-5">
+    <div id="success_msg" class="toast align-items-center w-100 shadow-none mb-3 border border-success rounded-0 my-4" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
+        <div class="d-flex p-2">
+            <div class="toast-body f-18 d-flex flex-row gap-3 align-items-center text-success">
+                <i class="fa-solid fa-check f-36 text-success"></i>
+                <span id="success_msg_text"></span>
+            </div>
+            <button type="button" class="me-2 m-auto bg-transparent border-0 ps-1 pe-0 text-success" data-bs-dismiss="toast" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+    <div id="error_msg" class="toast align-items-center w-100 shadow-none border-danger mb-3 my-4 border rounded-0" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
+        <div class="d-flex p-2">
+            <div class="toast-body f-18 d-flex flex-row gap-3 align-items-center text-danger">
+                <i class="fa-solid fa-triangle-exclamation f-36 text-danger"></i>
+                <span id="error_msg_text"></span>
+            </div>
+            <button type="button" class="me-2 m-auto bg-transparent border-0 ps-1 pe-0 text-danger" data-bs-dismiss="toast" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+    <form id="contact-form" class="d-flex flex-column h-100 justify-content-center w-100 needs-validation mb-3 form" novalidate>
+        <div class="mb-3">
+            <input type="text" class="form-control py-3 px-4" name="name" id="name" placeholder="Nombre" required>
+            <div class="invalid-feedback">
+                Este campo es requerido.
+            </div>
+        </div>
+        <div class="mb-3">
+            <input type="email" class="form-control py-3 px-4" name="email" id="email" placeholder="Correo Electrónico" required>
+            <div class="invalid-feedback">
+                Este campo es requerido.
+            </div>
+        </div>
+        <div class="mb-3">
+            <input type="text" class="form-control py-3 px-4" name="subject" id="subject" placeholder="Asunto" required>
+            <div class="invalid-feedback">
+                Este campo es requerido.
+            </div>
+        </div>
+        <div class="mb-3">
+            <textarea class="form-control py-3 px-4" id="message" name="message" rows="5" placeholder="Mensaje" required></textarea>
+            <div class="invalid-feedback">
+                Este campo es requerido.
+            </div>
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn submit_form font-1 fw-bold ls-2 py-3">
+                Enviar Mensaje
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('contact-form');
+        const successMsg = document.getElementById('success_msg');
+        const errorMsg = document.getElementById('error_msg');
+        const successMsgText = document.getElementById('success_msg_text');
+        const errorMsgText = document.getElementById('error_msg_text');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            if (!form.checkValidity()) {
+                event.stopPropagation();
+                form.classList.add('was-validated');
+                return;
+            }
+
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Enviando...';
+
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    successMsg.style.display = 'block';
+                    successMsgText.textContent = result.message;
+                    errorMsg.style.display = 'none';
+                    form.reset();
+                    form.classList.remove('was-validated');
+                } else {
+                    throw new Error(result.message || 'Ocurrió un error.');
+                }
+            } catch (error) {
+                errorMsg.style.display = 'block';
+                errorMsgText.textContent = error.message;
+                successMsg.style.display = 'none';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Enviar Mensaje';
+            }
+        });
+    });
+</script>
